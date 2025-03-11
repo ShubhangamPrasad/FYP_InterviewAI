@@ -1,0 +1,7 @@
+Front-end is somewhat functional. Immediate next steps:
+
+1. Code execution - sending code as post request and building LSP support to execute and error check the code
+2. Dockerise everything
+3. build initial conversational bot (text format)
+4. change it to speech format
+5. 
