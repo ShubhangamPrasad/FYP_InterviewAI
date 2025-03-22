@@ -453,7 +453,6 @@ def start_interview():
         "start_time": session_store[session_id]["start_time"]  # ✅ Send start time to frontend
     }))
 
-
 @app.route('/respond', methods=['POST', 'OPTIONS'])
 def respond():
     if request.method == "OPTIONS":
@@ -485,13 +484,14 @@ def respond():
             "output": []
         })
 
-        # Step 2: Stream the response word by word
+        # Step 2: Stream the response word by word (only text, no audio here)
         full_response = next_state.get("output", ["No response"])[-1]
         buffer = ""
+
+        # Yielding only text here
         for word in full_response.split():
             buffer += word + " "
-            yield word + " "
-            time.sleep(0.025)
+            yield word + " "  # Yield only the text part, no audio here
 
         # Step 3: After response is fully sent → summarize conversation
         new_summary = summarize_conversation(session_id, user_input, new_code_written)
@@ -505,7 +505,6 @@ def respond():
         }
 
     return apply_cors(Response(generate_stream(), mimetype='text/plain'))
-
 
 @app.route('/questions', methods=['GET', 'OPTIONS'])
 def fetch_questions():
@@ -787,27 +786,6 @@ def user_history():
         print("❌ Unexpected error in /user-history:", e)
         return apply_cors(jsonify({"error": "Internal server error"}), 500)
     
-@app.route('/tts', methods=['POST'])
-def tts():
-    
-    text = request.json.get("text", "")
-    if not text:
-        return jsonify({"error": "No text provided"}), 400
-
-
-    response = tts_client.audio.speech.create(
-        model="tts-hd",  # or "tts-1"
-        voice="nova",      # or shimmer, onyx, etc.
-        input=text
-    )
-
-    # Write to a temporary audio file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
-        response.stream_to_file(f.name)
-        temp_path = f.name
-
-    return send_file(temp_path, mimetype="audio/mpeg")
-
 
 ELEVENLABS_API_KEY = "sk_d10cf7e8636df4b40346285c66e0581c329c77f31d993c43"
 ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # e.g. Rachel
@@ -824,28 +802,82 @@ def elevenlabs_tts():
     if not text:
         return apply_cors(jsonify({"error": "No text provided"}), 400)
 
-    def generate():
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}/stream"
-        headers = {
-            "xi-api-key": ELEVENLABS_API_KEY,
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "text": text,
-            "voice_settings": {
-                "stability": 0.3,
-                "similarity_boost": 0.8,
-                "style": 0.5,
-                "use_speaker_boost": True
+    try:
+        def generate():
+            url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}/stream"
+            headers = {
+                "xi-api-key": ELEVENLABS_API_KEY,
+                "Content-Type": "application/json"
             }
-        }
+            payload = {
+                "text": text,
+                "voice_settings": {
+                    "stability": 0.3,
+                    "similarity_boost": 0.8,
+                    "style": 0.5,
+                    "use_speaker_boost": True
+                }
+            }
 
-        with requests.post(url, headers=headers, json=payload, stream=True) as r:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    yield chunk
+            with requests.post(url, headers=headers, json=payload, stream=True) as r:
+                if r.status_code != 200:
+                    print(f"Error fetching audio from ElevenLabs: {r.status_code}")
+                    return apply_cors(Response("Failed to get audio from ElevenLabs.", status=500, mimetype='text/plain'))
 
-    return apply_cors(Response(generate(), mimetype='audio/mpeg'))
+                # Log for diagnostics
+                print("Started streaming audio...")
+
+                # Stream audio chunks to the frontend continuously
+                for chunk in r.iter_content(chunk_size=1024):
+                    if chunk:
+                        yield chunk  # Yield each chunk of the audio stream
+
+                print("Audio streaming complete.")
+
+        # Return the streaming response with the audio/mpeg MIME type
+        return apply_cors(Response(generate(), mimetype='audio/mpeg'))
+
+    except Exception as e:
+        # Catch any exception and log it, then return a proper error response
+        print(f"Error during TTS generation: {e}")
+        return apply_cors(Response("Internal server error during TTS generation.", status=500, mimetype='text/plain'))
+
+@app.route('/openai_tts', methods=['POST', 'OPTIONS'])
+def openai_tts():
+    """Handles TTS generation using OpenAI API."""
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        response.status_code = 204
+        return apply_cors(response)
+
+    text = request.json.get("text", "")
+    if not text:
+        return apply_cors(jsonify({"error": "No text provided"}), 400)
+
+    try:
+        # Use the Azure OpenAI client to generate TTS audio
+        response = tts_client.audio.speech.create(
+            model="tts-hd",  # Choose the appropriate TTS model (e.g., "tts-hd" for high quality)
+            voice="nova",    # Choose the voice (this can vary based on the available voices)
+            input=text
+        )
+
+        # Check if the response is valid and contains the audio content
+        if response:
+            audio_stream = response.content  # Get the audio data stream directly
+
+            def generate_audio_stream():
+                yield audio_stream  # Yield the audio stream to the frontend
+
+            return apply_cors(Response(generate_audio_stream(), mimetype='audio/mpeg'))
+
+        else:
+            print("Error: No audio content returned from OpenAI.")
+            return apply_cors(Response("Failed to generate audio", status=500, mimetype='text/plain'))
+
+    except Exception as e:
+        print(f"Error during TTS generation: {e}")
+        return apply_cors(Response("Internal server error during TTS generation.", status=500, mimetype='text/plain'))
 
 
 if __name__ == '__main__':

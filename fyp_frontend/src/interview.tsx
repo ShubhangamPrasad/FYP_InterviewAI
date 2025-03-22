@@ -5,23 +5,14 @@ import { Send, MessageSquare, HelpCircle, Code2 } from 'lucide-react';
 
 const API_BASE_URL = 'http://127.0.0.1:5001'; 
 
-const playTTS = async (text: string) => {
-  const response = await fetch(`${API_BASE_URL}/elevenlabs_tts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-
-  if (!response.body) {
-    console.error("No audio stream from ElevenLabs.");
-    return;
-  }
-
+// Updated playTTS to handle streaming audio from the backend
+const playTTS = async (audioStream: ReadableStream) => {
   const audioContext = new AudioContext();
   const source = audioContext.createBufferSource();
-  const reader = response.body.getReader();
+  const reader = audioStream.getReader();
   const chunks: Uint8Array[] = [];
 
+  // Stream and accumulate audio chunks
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -30,11 +21,16 @@ const playTTS = async (text: string) => {
 
   const audioData = new Blob(chunks, { type: "audio/mpeg" });
   const arrayBuffer = await audioData.arrayBuffer();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-  source.buffer = audioBuffer;
-  source.connect(audioContext.destination);
-  source.start();
+  try {
+    // Decode the audio data
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    source.buffer = audioBuffer;
+    source.connect(audioContext.destination);
+    source.start();
+  } catch (error) {
+    console.error("Error during audio decoding and playback:", error);
+  }
 };
 
 
@@ -185,81 +181,83 @@ const App: React.FC = () => {
 
 
   // 5. Sending messages to your AI
-  const handleSendMessage = async (e: React.FormEvent | React.KeyboardEvent) => {
-    e.preventDefault();
-    if (!sessionId || inputMessage.trim() === '') {
-      console.error("Missing session_id or empty inputMessage.");
-      return;
-    }
-  
-    const userMsg = inputMessage;
-    setInputMessage('');
-  
-    // 1. Show the user message immediately
-    setConversation(prev => [...prev, { role: 'user', message: userMsg }]);
-  
-    // 2. Add placeholder AI response to be filled progressively
-    setConversation(prev => [...prev, { role: 'ai', message: '' }]);
-  
-    try {
-      const response = await fetch(`${API_BASE_URL}/respond`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          user_input: userMsg,
-          new_code_written: code
-        })
-      });
-  
-      if (!response.body) {
-        console.error("No response stream");
-        throw new Error("Stream failed");
-      }
-  
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-  
-      let aiMsg = '';
-  
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-  
-        aiMsg += decoder.decode(value, { stream: true });
-  
-        // Update the last message (AI response) live
-        setConversation(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: 'ai', message: aiMsg };
-          return updated;
-        });
-      }
-      if (aiMsg.trim()) {
-        playTTS(aiMsg); // 🎤 Play AI voice once the response finishes
-      }      
-  
-      // 3. Call /partial-eval in the background
-      fetch(`${API_BASE_URL}/partial-eval`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId })
+// Updated handleSendMessage function: Maintain existing behavior + add TTS streaming
+const handleSendMessage = async (e: React.FormEvent | React.KeyboardEvent) => {
+  e.preventDefault();
+  if (!sessionId || inputMessage.trim() === '') {
+    console.error("Missing session_id or empty inputMessage.");
+    return;
+  }
+
+  const userMsg = inputMessage;
+  setInputMessage('');
+
+  // Show user message immediately in the chat
+  setConversation(prev => [...prev, { role: 'user', message: userMsg }]);
+
+  // Add placeholder AI response (text only) to be filled progressively
+  setConversation(prev => [...prev, { role: 'ai', message: '' }]);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        user_input: userMsg,
+        new_code_written: code
       })
-        .then(res => {
-          if (!res.ok) throw new Error(`Partial eval error: ${res.status}`);
-          return res.json();
-        })
-        .then(evalData => {
-          console.log("Partial evaluation result:", evalData.partial_evaluation);
-        })
-        .catch(err => console.error("Error calling /partial-eval:", err));
-  
-    } catch (error) {
-      console.error('❌ Streaming error:', error);
-      setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
+    });
+
+    if (!response.body) {
+      console.error("No response stream");
+      throw new Error("Stream failed");
     }
-  };
-  
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    let aiMsg = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      aiMsg += decoder.decode(value, { stream: true });
+
+      // Update AI response text in the chat
+      setConversation(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: 'ai', message: aiMsg };
+        return updated;
+      });
+
+      // Play TTS audio after each chunk of text is processed using /openai_tts
+      try {
+        const ttsResponse = await fetch(`${API_BASE_URL}/openai_tts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: aiMsg })
+        });
+
+        if (!ttsResponse.body) {
+          console.error("No audio stream from OpenAI.");
+        } else {
+          // Stream the audio from OpenAI as it arrives
+          const audioStream = ttsResponse.body;
+          playTTS(audioStream);  // Play the audio stream in real-time
+        }
+      } catch (error) {
+        console.error("Error during TTS streaming:", error);
+      }
+    }
+
+  } catch (error) {
+    console.error('❌ Streaming error:', error);
+    setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50">
