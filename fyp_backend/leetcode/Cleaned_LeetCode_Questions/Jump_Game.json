@@ -1,0 +1,10 @@
+{
+    "summary": "Check array jump reachability",
+    "question": "Determine if starting at the first index, you can reach the last index given each array element indicates maximum jump length at that position.",
+    "example": "Input: nums = [2,3,1,1,4], Output: true; Input: nums = [3,2,1,0,4], Output: false",
+    "constraint": "1 <= nums.length <= 10^4, 0 <= nums[i] <= 10^5",
+    "followup": "",
+    "title": "Jump Game",
+    "leetcode_url": "https://leetcode.com/problems/Jump-Game/",
+    "difficulty": "Medium"
+}

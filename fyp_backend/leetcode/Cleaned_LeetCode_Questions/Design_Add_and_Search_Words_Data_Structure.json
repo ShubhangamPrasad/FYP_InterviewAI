@@ -1,0 +1,10 @@
+{
+    "summary": "Manage words and perform search",
+    "question": "Design a class called WordDictionary that supports adding words and searching for matches where the search string may contain '.' as a wildcard.",
+    "example": "Input: [\"WordDictionary\",\"addWord\",\"addWord\",\"addWord\",\"search\",\"search\",\"search\",\"search\"] [[],[\"bad\"],[\"dad\"],[\"mad\"],[\"pad\"],[\"bad\"],[\".ad\"],[\"b..\"]] Output: [null,null,null,null,false,true,true,true]",
+    "constraint": "1 <= word.length <= 500; addWord words consist of lowercase English letters; search words consist of '.' or lowercase English letters; no more than 50000 calls to addWord and search combined.",
+    "followup": "",
+    "title": "Design Add And Search Words Data Structure",
+    "leetcode_url": "https://leetcode.com/problems/Design-Add-and-Search-Words-Data-Structure/",
+    "difficulty": "Medium"
+}

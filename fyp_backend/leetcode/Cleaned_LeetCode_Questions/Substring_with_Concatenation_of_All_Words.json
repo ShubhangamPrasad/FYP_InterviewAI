@@ -1,0 +1,10 @@
+{
+    "summary": "Find substring indices with words",
+    "question": "Given a string s and an array of strings words, find all starting indices of substrings in s that are a concatenation of each word in words exactly once and without intervening characters.",
+    "example": "Input: s = \"barfoothefoobarman\", words = [\"foo\",\"bar\"] Output: [0,9]; Input: s = \"wordgoodgoodgoodbestword\", words = [\"word\",\"good\",\"best\",\"word\"] Output: []; Input: s = \"barfoofoobarthefoobarman\", words = [\"bar\",\"foo\",\"the\"] Output: [6,9,12]",
+    "constraint": "1 <= s.length <= 10^4; s consists of lower-case English letters; 1 <= words.length <= 5000; 1 <= words[i].length <= 30; words[i] consists of lower-case English letters.",
+    "followup": "",
+    "title": "Substring With Concatenation Of All Words",
+    "leetcode_url": "https://leetcode.com/problems/Substring-with-Concatenation-of-All-Words/",
+    "difficulty": "Hard"
+}

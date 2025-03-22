@@ -1,0 +1,10 @@
+{
+    "summary": "Reverse bits of 32-bit integer",
+    "question": "Given a 32-bit unsigned integer, reverse its binary representation and return the resulting integer.",
+    "example": "Input: n = 00000010100101000001111010011100\nOutput: 964176192 (00111001011110000010100101000000)\nInput: n = 11111111111111111111111111111101\nOutput: 3221225471 (10111111111111111111111111111111)",
+    "constraint": "Input is a binary string of length 32.",
+    "followup": "How to optimize if called frequently?",
+    "title": "Reverse Bits",
+    "leetcode_url": "https://leetcode.com/problems/Reverse-Bits/",
+    "difficulty": "Easy"
+}

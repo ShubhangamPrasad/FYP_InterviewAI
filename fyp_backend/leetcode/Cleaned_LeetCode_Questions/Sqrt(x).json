@@ -1,0 +1,10 @@
+{
+    "summary": "Compute square root without decimals",
+    "question": "Given a non-negative integer x, compute and return the integer part of its square root without using built-in exponent functions or operators.",
+    "example": "Input: x = 4, Output: 2; Input: x = 8, Output: 2 (since 2.82842... is truncated)",
+    "constraint": "0 <= x <= 2^31 - 1; no built-in exponent functions like pow or x ** 0.5 allowed",
+    "followup": "",
+    "title": "Sqrt(X)",
+    "leetcode_url": "https://leetcode.com/problems/Sqrt(x)/",
+    "difficulty": "Easy"
+}

@@ -1,12 +1,50 @@
 import os
-import operator
+import json
+import time
+import requests
+from flask import Flask, request, jsonify, make_response, send_file
+from flask import Response, stream_with_context
+from flask_cors import CORS
 from openai import AzureOpenAI
 from langgraph.graph import StateGraph
 from typing import TypedDict, Annotated, Dict, List
+import operator
+from db_connector import get_random_question 
+from db_connector import get_all_questions
+from db_connector import get_question_by_id
+from db_connector import get_all_summaries
+from db_connector import get_user
+from user_login import create_user
+import mysql.connector
+import jwt
+import datetime
+from pydantic import BaseModel
+from evaluation import evaluation_agent 
+from evaluation import partial_evaluation_agent
+from db_connector import get_user_feedback_history
+from db_connector import update_user_progress_by_email
+import tempfile
+
+
+app = Flask(__name__)
+# Apply CORS with the correct origin and credentials support:
+CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5173"}}, supports_credentials=True)
+
+# ✅ Handle CORS for all requests
+@app.after_request
+def apply_cors(response):
+    """Ensure CORS headers are applied correctly."""
+    response.headers["Access-Control-Allow-Origin"] = "http://127.0.0.1:5173"  # ✅ Must be specific origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Credentials"] = "true"  # ✅ Required when using `credentials: "include"
+
+    return response
 
 # Initialize Azure OpenAI client
 endpoint = "https://aiview-azureopenai.openai.azure.com"
 key = "EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe"
+SECRET_KEY = "1bbb57f43e1e5e3c751bfeaba059283e32b936d8b633f43daf042abe16e3e370209fd68f744e7b390514e4e6ed93e709e4eb19e2f78d1052a09d0baf32482ddc"
 
 class State(TypedDict):
     input: Annotated[List[dict], operator.add]  # Stores previous discussions as list of JSON objects
@@ -23,23 +61,30 @@ client = AzureOpenAI(
   api_version="2024-02-01"
 )
 
+# Initialize Azure OpenAI client for TTS
+tts_client = AzureOpenAI(
+    api_version="2024-05-01-preview",
+    api_key="9V14rjXQyvhKQX8SXDCxaVD5hYhxIh3Alj6uWptcjVWWLRpQmA2MJQQJ99BAACfhMk5XJ3w3AAAAACOGp0EO",
+    azure_endpoint="https://shubh-m6c24v3y-swedencentral.cognitiveservices.azure.com/"
+)
+
+
+# __________________________ DEFINING NODES __________________________
+
 def node3(state: State) -> State:
     input_data = state["input"][-1]  # Take the latest input only
     prompt = f"""
-        You are an interviewer taking a SWE interview. You've just received a JSON input containing four things: 
-        - Interview question
-        - Summary of past response
-        - New code written
-        - User's input
+        You are an interviewer taking a SWE interview. 
 
         The input is: {input_data} 
 
-        Based on this, classify the user's response into one of the following categories:
-        1 → User is confused and needs some guidance
-        2 → User has a question and needs clarification
-        3 → User has provided a response and needs feedback
+        Classify the user's response into one of the following categories:
+        1 → User is lost, needs guidance
+        2 → User asks question seeking guidance or clarification
+        3 → User has given a response and you need to evaluate it
+        4 → User is not talking about interview but needs a response
 
-        **Output only the number (1, 2, or 3) with no additional text, explanation, or formatting.**
+        **Output only the number (1, 2, 3, 4) with no additional text, explanation, or formatting.**
     """
 
     response = client.chat.completions.create(
@@ -47,7 +92,7 @@ def node3(state: State) -> State:
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
-        ]
+        ],
     )
 
     decision = response.choices[0].message.content.strip()
@@ -65,6 +110,10 @@ def router(state: State) -> Dict:
         return {"next": "node_5"}
     elif decision == "3":
         return {"next": "node_6"}
+    elif decision == "4":
+        return {"next": "node_8"}
+    elif decision == "5":
+        return {"next": "node_9"}
     else:
         return {"next": "node_7"}
 
@@ -73,15 +122,26 @@ def node4(state: State) -> State:
     prompt = f"This is the summary of what the user has done and said in the interview thus far '{input_data}'.\
     The user is confused and needs some guidance. Provide the user with some guidance questions on how to proceed without giving them the answer. \
     Remember this is a conversation, so leave room for further discussion. \
-        Make sure you are concise in your response!"
+    You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
+    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant.\
+    Make sure you are concise in your response! No more than 3 sentences"
     
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "system", "content": "You are a helpful assistant."},
-                  {"role": "user", "content": prompt}]
+                  {"role": "user", "content": prompt}],
+        stream=True  # ✅ Enable streaming
     )
 
-    state["output"] = [response.choices[0].message.content]
+    response_text = ""
+    for chunk in response:
+        if not chunk.choices or not chunk.choices[0].delta:
+            continue  # ✅ Skip empty chunks safely
+        content_piece = chunk.choices[0].delta.content
+        if content_piece:
+            response_text += content_piece
+
+    state["output"] = [response_text]
     return state
 
 def node5(state: State) -> State:
@@ -90,39 +150,224 @@ def node5(state: State) -> State:
     The user has a specific question they'd like answered. Provide a question similar to what an interviewer \
     might ask, without giving them any new information. Leave room for further discussion.\
     If you look at past summary and you feel like the user has not written any code, encourage them to start writing.\
-        Make sure you are concise in your response!"
+    You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
+    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant.\
+        Make sure you are concise in your response! No more than 3 sentences"
     
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "system", "content": "You are a helpful assistant."},
-                  {"role": "user", "content": prompt}]
+                  {"role": "user", "content": prompt}],
+        stream=True  # ✅ Enable streaming
     )
 
-    state["output"] = [response.choices[0].message.content]
+    response_text = ""
+    for chunk in response:
+        if not chunk.choices or not chunk.choices[0].delta:
+            continue  # ✅ Skip empty chunks safely
+        content_piece = chunk.choices[0].delta.content
+        if content_piece:
+            response_text += content_piece
+
+    state["output"] = [response_text]
     return state
 
 def node6(state: State) -> State:
     input_data = state["input"][-1]
     prompt = f"This is the summary of what the user has done and said in the interview thus far '{input_data}'.\
-    The user has given a response. Evaluate if their response is correct. \
+    The user has given a response. Evaluate if their response is correct.\
+    Otherwise, As an interviewer provide the person with some constructive feedback\
     If the answer is good but there is no code written, encourage them to start writing. \
-    If code has been written and its accurate then slightly modify the question parameters for a harder challenge. \
-    Otherwise, provide constructive feedback and conclude the interview.\
-        Make sure you are concise in your response!"
+    If code has been written then firstly most importantly, ensure that the code given is correct! If it's not tell them what is wrong but dont give answer \
+    If all is good, slightly modify the question parameters for a harder challenge. \
+    You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
+    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant. \
+    Make sure you are concise in your response! Remember to respond as an interviewer back to the candidate! No more than 3 sentences"
     
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "system", "content": "You are a helpful assistant."},
-                  {"role": "user", "content": prompt}]
+                  {"role": "user", "content": prompt}],
+        stream=True  # ✅ Enable streaming
     )
 
-    state["output"] = [response.choices[0].message.content]
+    response_text = ""
+    for chunk in response:
+        if not chunk.choices or not chunk.choices[0].delta:
+            continue  # ✅ Skip empty chunks safely
+        content_piece = chunk.choices[0].delta.content
+        if content_piece:
+            response_text += content_piece
+
+    state["output"] = [response_text]
     return state
 
 def node7(state: State) -> State:
     print("Interview is ending...")
     state["output"] = ["Goodbye!"]
     return state
+
+def node8(state: State) -> State:
+    input_data = state["input"][-1]
+    prompt = f"This is the summary of what the user has done and said in the interview thus far '{input_data}'.\
+    The user is not answering the question but asking a pertinent basic questions.\
+    Provide a response to the user's question.\
+    You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
+    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant.\
+        Make sure you are concise in your response! No more than 3 sentences"
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "You are a helpful assistant."},
+                  {"role": "user", "content": prompt}],
+        stream=True  # ✅ Enable streaming
+    )
+
+    response_text = ""
+    for chunk in response:
+        if not chunk.choices or not chunk.choices[0].delta:
+            continue  # ✅ Skip empty chunks safely
+        content_piece = chunk.choices[0].delta.content
+        if content_piece:
+            response_text += content_piece
+
+    state["output"] = [response_text]
+    return state
+
+def node9(state: State) -> State:
+    input_data = state["input"][-1]
+    prompt = f"Tthank them for the interview and say bye bye."
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "You are a helpful assistant."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    state["output"] = [response.choices[0].message.content]
+    return state
+# ______________________________________________________________________________________________________________________________________
+# ______________________________________________________________________________________________________________________________________
+# __________________________________________________________ HELPER FUNCTIONS __________________________________________________________
+# ______________________________________________________________________________________________________________________________________
+# ______________________________________________________________________________________________________________________________________
+
+def summarize_conversation(session_id: str, user_input: str, new_code: str) -> str:
+    """
+    Given the current session state, user input, and new code,
+    generate a concise updated summary of the conversation using OpenAI.
+    Returns the updated conversation summary.
+    """
+    current_state = session_store[session_id]
+    past_summary = current_state.get("interaction_summary", "")
+    last_bot_response = (current_state["output"][-1]
+                         if current_state.get("output") else "No response yet")
+
+    summary_prompt = f"""
+    Given the following conversation history, generate a structured and concise summary:
+
+    Conversation History:
+    {past_summary}
+
+    Latest Interaction:
+    Bot's Response: {last_bot_response}
+    User's Response: {user_input}
+    User's Code: {new_code}
+
+    Summarize in 2-3 sentences, keeping it clear and concise.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that summarizes conversations."},
+            {"role": "user", "content": summary_prompt}
+        ]
+    )
+
+    new_summary = response.choices[0].message.content.strip()
+    return new_summary
+
+def update_conversation_state(session_id: str, new_summary: str,
+                              user_input: str, new_code: str) -> str:
+    """
+    Uses the updated summary, user input, and code to invoke the state machine
+    and store the resulting state in the session. Returns the bot's latest response.
+    """
+    current_state = session_store[session_id]
+
+    # Build the next input for the workflow
+    next_input = {
+        "interview_question": current_state["input"][0]["interview_question"],
+        "summary_of_past_response": new_summary,
+        "new_code_written": new_code,
+        "user_input": user_input
+    }
+
+    # Invoke the state machine
+    next_state = app_graph.invoke({"input": [next_input], "decision": [], "output": []})
+    bot_response = next_state.get("output", ["No response"])[-1]
+
+    # Update the session store with new state
+    session_store[session_id] = {
+        "input": [next_input],
+        "decision": next_state["decision"],
+        "output": [bot_response],
+        # Keep or update any other session fields, e.g. interaction_summary
+        "interaction_summary": new_summary,
+        "start_time": current_state.get("start_time"),
+        "duration": current_state.get("duration", 0)
+    }
+
+    return bot_response
+
+def evaluate_response_partially(session_id: str):
+    """
+    Calls the partial_evaluation_agent to produce a simpler
+    incremental judgment. Stores it in session_store under partial_eval_history.
+    """
+    current_data = session_store[session_id]
+    
+    # The last "input" from the user (just stored in session_store)
+    latest_input = current_data["input"][-1]
+
+    # If we want continuity, pass the last partial eval if it exists
+    partial_history = current_data.get("partial_eval_history", [])
+    last_partial_eval = partial_history[-1] if partial_history else {}
+
+    # Build the state for partial evaluator
+    partial_eval_state = {
+        "input": [{
+            "interview_question": latest_input["interview_question"],
+            "summary_of_past_response": latest_input["summary_of_past_response"],
+            "new_code_written": latest_input["new_code_written"],
+            "previous_partial_eval": last_partial_eval
+        }],
+        "decision": [],
+        "output": []
+    }
+
+    # Call the partial evaluator
+    updated_state = partial_evaluation_agent(partial_eval_state)
+
+    # Extract the result
+    result = updated_state.get("partial_evaluation_result", {})
+
+    # Store it in the session
+    if "partial_eval_history" not in current_data:
+        current_data["partial_eval_history"] = []
+    current_data["partial_eval_history"].append(result)
+
+    # Optionally store the latest partial eval in a simpler key
+    current_data["current_partial_evaluation"] = result
+
+    return result
+
+# ______________________________________________________________________________________________________________________________________________
+# ______________________________________________________________________________________________________________________________________________
+# __________________________________________________________ ADDING NODES TO WORKFLOW __________________________________________________________
+# ______________________________________________________________________________________________________________________________________________
+# ______________________________________________________________________________________________________________________________________________
 
 # Add nodes to the workflow
 workflow.add_node("node_3", node3)
@@ -131,6 +376,7 @@ workflow.add_node("node_4", node4)
 workflow.add_node("node_5", node5)
 workflow.add_node("node_6", node6)
 workflow.add_node("node_7", node7)
+workflow.add_node("node_8", node8)
 
 # Route decisions properly
 workflow.add_edge("node_3", "router")
@@ -141,6 +387,7 @@ workflow.add_conditional_edges(
         "node_4": "node_4",
         "node_5": "node_5",
         "node_6": "node_6",
+        "node_8": "node_8",
         "node_7": "node_7"
     }
 )
@@ -149,120 +396,457 @@ workflow.add_conditional_edges(
 workflow.set_entry_point("node_3")
 workflow.set_finish_point("node_7")
 
-# Compile workflow
-app = workflow.compile()
+app_graph = workflow.compile()
 
-# Initial state with a question
-initial_state = {
-    "input": [
-        {
-            "interview_question": "Given an unsorted array of integers, return the k smallest elements in sorted order. You may use any sorting algorithm of your choice, but aim for an efficient approach.",
+# ✅ Store Session States
+session_store = {}
+# ___________________________________________________________________________________________________________________________________
+# ___________________________________________________________________________________________________________________________________
+# __________________________________________________________ API ENDPOINTS __________________________________________________________
+# ___________________________________________________________________________________________________________________________________
+# ___________________________________________________________________________________________________________________________________
+
+
+@app.route('/start', methods=['POST', 'OPTIONS'])
+def start_interview():
+    """Handles interview initialization and fetches a specific question based on question_id."""
+    
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+    
+    data = request.json
+    question_id = data.get("question_id")  # ✅ Get the selected question ID from the frontend
+
+    if not question_id:
+        return apply_cors(jsonify({"error": "No question_id provided"}), 400)
+
+    question = get_question_by_id(question_id)  # ✅ Fetch the selected question
+
+    if not question:
+        return apply_cors(jsonify({"error": "Invalid question_id"}), 404)
+
+    # Generate a session ID
+    session_id = str(int(time.time()))
+
+    # Store session details with the selected question
+    session_store[session_id] = {
+        "input": [{
+            "interview_question": question["question_text"],  # ✅ Store the selected question
             "summary_of_past_response": "The user has just started and has not written any code yet.",
             "new_code_written": "",
-            "user_input": "I'm not sure where to start. Should I sort the whole array first, or is there a more optimal way to find the k smallest elements?"
-        }
-    ],
-    "decision": [],
-    "output": []
-}
+            "user_input": ""
+        }],
+        "interaction_summary": "",  # ✅ Initialize an empty conversation summary
+        "decision": [],
+        "output": [],
+        "start_time": time.time(),  # ✅ Store session start time
+        "duration": 0  # ✅ Initialize duration
+    }
+
+    return apply_cors(jsonify({
+        "session_id": session_id,
+        "message": "Interview started!",
+        "question": question["question_text"],  # ✅ Send question to frontend
+        "example": question.get("example", ""),  # ✅ Send example to frontend
+        "constraint": question.get("reservations", ""),
+        "question_id": question["id"],  # ✅ Include question ID for tracking
+        "start_time": session_store[session_id]["start_time"]  # ✅ Send start time to frontend
+    }))
 
 
-# Start continuous interview loop
-current_state = initial_state
+@app.route('/respond', methods=['POST', 'OPTIONS'])
+def respond():
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
 
-import json
-import time
+    data = request.json
+    session_id = data.get("session_id")
+    if not session_id or session_id not in session_store:
+        return apply_cors(jsonify({"error": "Invalid session_id"}), 400)
 
-# Initialize interview timing
-start_time = time.time()  # Record start time
-max_duration = 20 * 60  # 20 minutes in seconds
-user_input_time = 1.5 * 60  # 1.5 minutes per user input
+    user_input = data.get("user_input", "")
+    new_code_written = data.get("new_code_written", "")
+    current_state = session_store[session_id]
+    prev_summary = current_state.get("interaction_summary", "")
 
-while True:
-    # Calculate elapsed time
-    elapsed_time = time.time() - start_time
-
-    # If interview exceeds max duration, end it
-    if elapsed_time >= max_duration:
-        print("Bot: We've reached the end of our time for this interview. Great job! Looking forward to our next session.")
-        break
-
-    # Invoke workflow with current state
-    result_state = app.invoke(current_state)
-
-    # Ensure there is an output response
-    bot_response = result_state.get("output", ["No response"])[-1]
-
-    # Print latest output
-    print("Bot:", bot_response)
-    print(f"⏳ Interview Time Elapsed: {elapsed_time // 60:.0f} min {elapsed_time % 60:.0f} sec")
-    print("________________________________________________________________________________________")
-
-    # If the interview is over, break the loop
-    if bot_response.lower() == "goodbye!":
-        break
-
-    # Keep asking for valid JSON input until received
-    while True:
-        try:
-
-            user_json = input("Your response: ").strip()
-            user_response = json.loads(user_json)
-
-            # Ensure the JSON contains the expected keys
-            if "new_code_written" not in user_response or "user_input" not in user_response:
-                raise ValueError("Invalid format: JSON must include 'new_code_written' and 'user_input'.")
-
-            break  # Valid JSON received, exit loop
-
-        except json.JSONDecodeError:
-            print("❌ Invalid JSON format. Please try again.")
-        except ValueError as e:
-            print(f"❌ {e}. Please try again.")
-
-    # add 1.5mins to the timer
-    elapsed_time += user_input_time
-
-
-    # Extract user response fields
-    new_code_written = user_response["new_code_written"]
-    user_input = user_response["user_input"]
-
-
-    # Generate AI-powered summary of past responses
-    past_summary = current_state["input"][-1]["summary_of_past_response"]
-    ai_summary_prompt = f"""
-        Given the following conversation history, generate a short and concise summary:
-
-      ç  Conversation History:
-        {past_summary}
-        Bot's latest response: {bot_response}
-        User's latest response: {user_input}
-
-        Provide a **brief and structured** summary of what has happened so far in 2-3 sentences.
-    """
-
-    summary_response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "system", "content": "You are a helpful assistant that summarizes conversations."},
-                  {"role": "user", "content": ai_summary_prompt}]
-    )
-
-    updated_summary = summary_response.choices[0].message.content.strip()
-    # Construct the next input state
     next_input = {
-        "interview_question": initial_state["input"][0]["interview_question"],  # Keep the original question
-        "summary_of_past_response": updated_summary,  # AI-generated structured summary
+        "interview_question": current_state["input"][0]["interview_question"],
+        "summary_of_past_response": prev_summary,
         "new_code_written": new_code_written,
         "user_input": user_input
     }
 
-    print("AI Summary:", updated_summary)
-    print("________________________________________________________________________________________")
+    @stream_with_context
+    def generate_stream():
+        # Step 1: Run LangGraph (routes to the right node)
+        next_state = app_graph.invoke({
+            "input": [next_input],
+            "decision": [],
+            "output": []
+        })
 
-    # Update current state
-    current_state = {
-        "input": [next_input],  # Correct format for LangGraph
+        # Step 2: Stream the response word by word
+        full_response = next_state.get("output", ["No response"])[-1]
+        buffer = ""
+        for word in full_response.split():
+            buffer += word + " "
+            yield word + " "
+            time.sleep(0.025)
+
+        # Step 3: After response is fully sent → summarize conversation
+        new_summary = summarize_conversation(session_id, user_input, new_code_written)
+        session_store[session_id] = {
+            "input": [next_input],
+            "decision": next_state["decision"],
+            "output": [buffer.strip()],
+            "interaction_summary": new_summary,
+            "start_time": current_state.get("start_time"),
+            "duration": current_state.get("duration", 0)
+        }
+
+    return apply_cors(Response(generate_stream(), mimetype='text/plain'))
+
+
+@app.route('/questions', methods=['GET', 'OPTIONS'])
+def fetch_questions():
+    """API to get all questions."""
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    summaries = get_all_summaries()
+    return apply_cors(jsonify(summaries))
+
+@app.route('/question/<int:question_id>', methods=['GET', 'OPTIONS'])
+def fetch_question_by_id(question_id):
+    """API to get a specific question by ID."""
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    question = get_question_by_id(question_id)
+    if question:
+        return apply_cors(jsonify(question))
+    
+    return apply_cors(jsonify({"error": "Question not found"}), 404)
+
+@app.route('/login', methods=['POST', 'OPTIONS'])
+def login():
+    """Handles user login and sets a secure HTTP-only cookie."""
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        return apply_cors(response)
+
+    try:
+        data = request.json
+        email = data.get("email")
+        password = data.get("password")
+        
+        user = get_user(email, password)  # Ensure this function exists
+        if not user:
+            response = jsonify({"error": "Invalid credentials"})
+            response.status_code = 401
+            return apply_cors(response)
+
+        # Generate JWT token
+        token = jwt.encode(
+            {"user_id": user["id"], "email": user["email"], "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)},
+            SECRET_KEY, 
+            algorithm="HS256"
+        )
+
+        # Create HTTP-only cookie response
+        response = make_response(jsonify({"message": "Login successful"}))
+        response.set_cookie(
+            "auth_token",
+            token,
+            httponly=True,
+            secure=False,  # ✅ Allow cookies over HTTP (only for testing)
+            samesite="Strict",
+            max_age=24 * 60
+        )
+        return apply_cors(response)
+
+    except Exception as e:
+        print(f"❌ ERROR in /login: {e}")
+        response = jsonify({"error": "Internal Server Error"})
+        response.status_code = 500
+        return apply_cors(response)
+
+@app.route('/register', methods=['POST', 'OPTIONS'])
+def register():
+    """Handles user registration with correct CORS headers for preflight requests."""
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        response.status_code = 204  # ✅ FIXED: No Content
+        return apply_cors(response)
+
+    try:
+        data = request.get_json()
+        name = data.get("name")
+        email = data.get("email")
+        password = data.get("password")
+
+        if not name or not email or not password:
+            response = jsonify({"error": "All fields are required"})
+            response.status_code = 400
+            return apply_cors(response)
+
+        success = create_user(name, email, password)
+
+        if success:
+            response = jsonify({"message": "User registered successfully!"})
+            response.status_code = 201
+            return apply_cors(response)
+        else:
+            response = jsonify({"error": "Email already registered"})
+            response.status_code = 409
+            return apply_cors(response)
+
+    except Exception as e:
+        print(f"❌ ERROR in /register: {e}")
+        response = jsonify({"error": "Internal Server Error"})
+        response.status_code = 500
+        return apply_cors(response)  # ✅ Ensure CORS headers are applied
+    
+@app.route('/check-auth', methods=['GET', 'OPTIONS'])
+def check_auth():
+    """Checks if the user is authenticated based on the auth_token cookie."""
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    token = request.cookies.get("auth_token")
+    if not token:
+        response = jsonify({"error": "Not authenticated"})
+        response.status_code = 401
+        return apply_cors(response)
+
+
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return apply_cors(jsonify({"message": "Authenticated"}))  # ✅ 200 OK
+    except jwt.ExpiredSignatureError:
+        return apply_cors(jsonify({"error": "Token expired"}), 401)
+    except jwt.InvalidTokenError:
+        return apply_cors(jsonify({"error": "Invalid token"}), 401)
+    
+@app.route('/logout', methods=['POST', 'OPTIONS'])
+def logout():
+    """Logs the user out by clearing the auth_token cookie."""
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    response = jsonify({"message": "Logout successful"})
+    response.set_cookie(
+        "auth_token", 
+        "",  # ✅ Clears the cookie
+        expires=0,  # ✅ Ensures the cookie is immediately expired
+        httponly=True, 
+        secure=True,  # ✅ Keep this True for HTTPS, set to False for local testing
+        samesite="Strict"
+    )
+    return apply_cors(response)
+
+@app.route('/partial-eval', methods=['POST', 'OPTIONS'])
+def partial_eval():
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    data = request.json
+    session_id = data.get("session_id")
+    if not session_id or session_id not in session_store:
+        return apply_cors(jsonify({"error": "Invalid session_id"}), 400)
+
+    # Now call your partial evaluation logic
+    partial_evaluation = evaluate_response_partially(session_id)
+
+    print(partial_evaluation)
+
+    return apply_cors(jsonify({
+        "partial_evaluation": partial_evaluation
+    }))
+
+@app.route("/final_evaluation", methods=["POST", "OPTIONS"])
+def final_evaluation():
+    """
+    Uses the entire conversation summary, user code, and partial_eval_history
+    to produce a final detailed evaluation with the existing 'evaluation_agent'.
+    """
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    data = request.json
+    session_id = data.get("session_id")
+    student_id = data.get("student_id")  # ✅ Ensure student_id is received
+    question_id = data.get("question_id")  # ✅ Ensure question_id is received    
+    
+    print("Received session_id:", session_id)
+    print("Current session_store keys:", session_store.keys())  # Debugging prin    
+
+    if not session_id or session_id not in session_store:
+        response = jsonify({"error": "Invalid session_id"})
+        response.status_code = 400
+        return apply_cors(response)
+    
+    if not student_id or not question_id:
+        response = jsonify({"error": "Missing student_id or question_id"})
+        response.status_code = 400
+        return apply_cors(response)
+
+    # Gather the entire conversation summary
+    entire_summary = session_store[session_id].get("interaction_summary", "")
+    final_code = session_store[session_id]["input"][-1].get("new_code_written", "")
+    partial_eval_history = session_store[session_id].get("partial_eval_history", [])
+
+    # Build a state object for the final evaluation
+    final_input = {
+        "student_id": student_id,  # ✅ Ensure student_id is included
+        "question_id": question_id,  # ✅ Ensure question_id is included
+        "interview_question": session_store[session_id]["input"][0]["interview_question"],
+        "summary_of_past_response": entire_summary,
+        "new_code_written": final_code,
+        "partial_eval_history": partial_eval_history
+    }
+
+    eval_state = {
+        "input": [final_input],
         "decision": [],
         "output": []
     }
+
+
+    # Call your evaluation_agent to produce the final evaluation
+    updated_eval_state = evaluation_agent(eval_state)
+    final_result = updated_eval_state.get("evaluation_result", {})
+
+    # Optionally store the final evaluation in the session
+    session_store[session_id]["final_evaluation"] = final_result
+
+    try:
+    # Strip down the result to just the 2 keys you care about
+        feedback_only = {
+            "final_evaluation": final_result.get("final_evaluation", {}),
+            "detailed_feedback": final_result.get("detailed_feedback", {})
+        }
+
+        update_success = update_user_progress_by_email(
+            email=student_id,
+            question_id=int(question_id),
+            feedback_json=feedback_only
+        )
+
+        if not update_success:
+            print("❌ Failed to update user progress in DB.")
+    except Exception as e:
+        print(f"❌ Exception during user progress update: {e}")
+
+
+    return apply_cors(jsonify({"final_evaluation": final_result}))
+
+@app.route('/me', methods=['GET'])
+def get_user_email():
+    token = request.cookies.get("auth_token")
+    if not token:
+        return jsonify({"error": "Not authenticated"}), 401
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return jsonify({"email": decoded["email"]})
+    except Exception as e:
+        return jsonify({"error": "Invalid token"}), 401
+
+from db_connector import get_user_feedback_history
+
+@app.route('/user-history', methods=['GET', 'OPTIONS'])
+def user_history():
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    token = request.cookies.get("auth_token")
+    if not token:
+        return apply_cors(jsonify({"error": "Not authenticated"}), 401)
+
+    try:
+        # Decode the JWT token
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded_token.get("user_id")
+
+        if not user_id:
+            return apply_cors(jsonify({"error": "User ID not found in token"}), 401)
+
+        # 🔍 Fetch the user's feedback history
+        feedback_entries = get_user_feedback_history(str(user_id))
+        print(f"✅ Retrieved {len(feedback_entries)} feedback entries for user_id {user_id}")
+
+        return apply_cors(jsonify({"feedback": feedback_entries}))
+
+    except jwt.ExpiredSignatureError:
+        return apply_cors(jsonify({"error": "Token expired"}), 401)
+
+    except jwt.InvalidTokenError:
+        return apply_cors(jsonify({"error": "Invalid token"}), 401)
+
+    except Exception as e:
+        print("❌ Unexpected error in /user-history:", e)
+        return apply_cors(jsonify({"error": "Internal server error"}), 500)
+    
+@app.route('/tts', methods=['POST'])
+def tts():
+    
+    text = request.json.get("text", "")
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+
+    response = tts_client.audio.speech.create(
+        model="tts-hd",  # or "tts-1"
+        voice="nova",      # or shimmer, onyx, etc.
+        input=text
+    )
+
+    # Write to a temporary audio file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
+        response.stream_to_file(f.name)
+        temp_path = f.name
+
+    return send_file(temp_path, mimetype="audio/mpeg")
+
+
+ELEVENLABS_API_KEY = "sk_d10cf7e8636df4b40346285c66e0581c329c77f31d993c43"
+ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # e.g. Rachel
+
+@app.route('/elevenlabs_tts', methods=['POST', 'OPTIONS'])
+def elevenlabs_tts():
+    """Handles ElevenLabs TTS with proper CORS support."""
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        response.status_code = 204  # ✅ Respond correctly to preflight
+        return apply_cors(response)
+
+    text = request.json.get("text", "")
+    if not text:
+        return apply_cors(jsonify({"error": "No text provided"}), 400)
+
+    def generate():
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}/stream"
+        headers = {
+            "xi-api-key": ELEVENLABS_API_KEY,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "text": text,
+            "voice_settings": {
+                "stability": 0.3,
+                "similarity_boost": 0.8,
+                "style": 0.5,
+                "use_speaker_boost": True
+            }
+        }
+
+        with requests.post(url, headers=headers, json=payload, stream=True) as r:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    yield chunk
+
+    return apply_cors(Response(generate(), mimetype='audio/mpeg'))
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001, debug=True)

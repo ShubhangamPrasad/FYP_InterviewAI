@@ -1,0 +1,10 @@
+{
+    "summary": "Simplify Unix-style file path",
+    "question": "Convert the given absolute Unix-style file system path to its simplified canonical form following the specified rules.",
+    "example": "Input: path = \"/home/\"; Output: \"/home\"\nInput: path = \"/../\"; Output: \"/\"\nInput: path = \"/home//foo/\"; Output: \"/home/foo\"\nInput: path = \"/a/./b/../../c/\"; Output: \"/c\"",
+    "constraint": "1 <= path.length <= 3000; path consists of English letters, digits, '.', '/', or '_'; path is a valid absolute Unix path.",
+    "followup": "",
+    "title": "Simplify Path",
+    "leetcode_url": "https://leetcode.com/problems/Simplify-Path/",
+    "difficulty": "Medium"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Populate next pointers in tree",
+    "question": "Given a binary tree, populate each node's 'next' pointer to point to its next right node, or set it to NULL if no next right node exists.",
+    "example": "Input: root = [1,2,3,4,5,null,7]\nOutput: [1,#,2,3,#,4,5,7,#]\nExplanation: '#' indicates the end of each level. Input: root = []\nOutput: []",
+    "constraint": "Tree size is in the range [0, 6000]. Node values are between -100 and 100. Use constant extra space, assuming implicit stack space is not extra space.",
+    "followup": "You may only use constant extra space.",
+    "title": "Populating Next Right Pointers In Each Node Ii",
+    "leetcode_url": "https://leetcode.com/problems/Populating-Next-Right-Pointers-in-Each-Node-II/",
+    "difficulty": "Medium"
+}

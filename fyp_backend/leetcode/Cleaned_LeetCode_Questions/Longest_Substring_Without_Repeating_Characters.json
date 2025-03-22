@@ -1,0 +1,10 @@
+{
+    "summary": "Find longest substring length",
+    "question": "Determine the length of the longest substring without repeating characters in a given string.",
+    "example": "Input: s = 'abcabcbb' | Output: 3; Input: s = 'bbbbb' | Output: 1; Input: s = 'pwwkew' | Output: 3; Input: s = '' | Output: 0",
+    "constraint": "0 <= s.length <= 5 * 10^4; s consists of English letters, digits, symbols, and spaces.",
+    "followup": "",
+    "title": "Longest Substring Without Repeating Characters",
+    "leetcode_url": "https://leetcode.com/problems/Longest-Substring-Without-Repeating-Characters/",
+    "difficulty": "Medium"
+}

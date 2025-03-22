@@ -1,0 +1,10 @@
+{
+    "summary": "Generate well-formed parentheses combinations",
+    "question": "Write a function to generate all combinations of well-formed parentheses for a given number of pairs n.",
+    "example": "Input: n = 3, Output: ['((()))', '(()())', '(())()', '()(())', '()()()']\nInput: n = 1, Output: ['()']",
+    "constraint": "1 <= n <= 8",
+    "followup": "",
+    "title": "Generate Parentheses",
+    "leetcode_url": "https://leetcode.com/problems/Generate-Parentheses/",
+    "difficulty": "Medium"
+}

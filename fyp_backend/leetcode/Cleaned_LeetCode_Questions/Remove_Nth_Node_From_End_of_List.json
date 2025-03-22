@@ -1,0 +1,10 @@
+{
+    "summary": "Remove nth node from end",
+    "question": "Given the head of a linked list, remove the nth node from the end of the list and return its head.",
+    "example": "Input: head = [1,2,3,4,5], n = 2; Output: [1,2,3,5]. Input: head = [1], n = 1; Output: []. Input: head = [1,2], n = 1; Output: [1].",
+    "constraint": "1 <= sz <= 30, 0 <= Node.val <= 100, 1 <= n <= sz",
+    "followup": "Could you do this in one pass?",
+    "title": "Remove Nth Node From End Of List",
+    "leetcode_url": "https://leetcode.com/problems/Remove-Nth-Node-From-End-of-List/",
+    "difficulty": "Medium"
+}

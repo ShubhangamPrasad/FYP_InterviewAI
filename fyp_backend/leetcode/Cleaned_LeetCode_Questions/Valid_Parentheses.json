@@ -1,0 +1,10 @@
+{
+    "summary": "Check string for valid brackets",
+    "question": "Determine if a string containing '()', '{}', '[]' is valid based on correct pairing and order.",
+    "example": "Input: s = \"()\" -> Output: true; Input: s = \"()[{}]\" -> Output: true; Input: s = \"(]\" -> Output: false",
+    "constraint": "1 <= s.length <= 10^4; s contains only '()', '{}', '[]'.",
+    "followup": "",
+    "title": "Valid Parentheses",
+    "leetcode_url": "https://leetcode.com/problems/Valid-Parentheses/",
+    "difficulty": "Easy"
+}

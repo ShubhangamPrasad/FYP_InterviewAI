@@ -1,0 +1,10 @@
+{
+    "summary": "Find kth smallest in BST",
+    "question": "Given the root of a binary search tree and an integer k, return the kth (1-indexed) smallest element in the tree.",
+    "example": "Input: root = [3,1,4,null,2], k = 1; Output: 1. Input: root = [5,3,6,2,4,null,null,1], k = 3; Output: 3.",
+    "constraint": "1 <= k <= n <= 10^4, 0 <= Node.val <= 10^4. Number of nodes in the tree is n.",
+    "followup": "If the BST is modified often and kth smallest search is frequent, how can this be optimized?",
+    "title": "Kth Smallest Element In A Bst",
+    "leetcode_url": "https://leetcode.com/problems/Kth-Smallest-Element-in-a-BST/",
+    "difficulty": "Medium"
+}

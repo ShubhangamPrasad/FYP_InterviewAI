@@ -1,0 +1,10 @@
+{
+    "summary": "Find longest consecutive sequence length",
+    "question": "Given an unsorted array of integers, return the length of the longest consecutive elements sequence. Implement the solution in O(n) time complexity.",
+    "example": "Input: nums = [100,4,200,1,3,2]; Output: 4 (Explanation: Longest sequence is [1, 2, 3, 4])\nInput: nums = [0,3,7,2,5,8,4,6,0,1]; Output: 9 (Explanation: Longest sequence is [0, 1, 2, 3, 4, 5, 6, 7, 8])",
+    "constraint": "0 <= nums.length <= 10^5; -10^9 <= nums[i] <= 10^9",
+    "followup": "",
+    "title": "Longest Consecutive Sequence",
+    "leetcode_url": "https://leetcode.com/problems/Longest-Consecutive-Sequence/",
+    "difficulty": "Medium"
+}

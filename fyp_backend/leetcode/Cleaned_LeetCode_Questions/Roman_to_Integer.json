@@ -1,0 +1,10 @@
+{
+    "summary": "Convert Roman numeral to integer",
+    "question": "Given a Roman numeral string, convert it to its integer equivalent.",
+    "example": "Input: s = 'III' Output: 3; Input: s = 'IV' Output: 4; Input: s = 'IX' Output: 9; Input: s = 'LVIII' Output: 58 (L=50, V=5, III=3); Input: s = 'MCMXCIV' Output: 1994 (M=1000, CM=900, XC=90, IV=4)",
+    "constraint": "1 <= s.length <= 15; s contains only the characters ('I', 'V', 'X', 'L', 'C', 'D', 'M'); s is guaranteed to be a valid Roman numeral in the range [1, 3999].",
+    "followup": "",
+    "title": "Roman To Integer",
+    "leetcode_url": "https://leetcode.com/problems/Roman-to-Integer/",
+    "difficulty": "Easy"
+}

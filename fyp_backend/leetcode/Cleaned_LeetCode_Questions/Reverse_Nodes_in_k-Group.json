@@ -1,0 +1,10 @@
+{
+    "summary": "Reverse linked list in k groups",
+    "question": "Given a linked list, reverse its nodes in groups of k at a time while leaving remaining nodes intact. Only nodes may be rearranged, not their values.",
+    "example": "Input: head = [1,2,3,4,5], k = 2; Output: [2,1,4,3,5]. Input: head = [1,2,3,4,5], k = 3; Output: [3,2,1,4,5]. Input: head = [1,2,3,4,5], k = 1; Output: [1,2,3,4,5]. Input: head = [1], k = 1; Output: [1].",
+    "constraint": "1 <= sz <= 5000, 0 <= Node.val <= 1000, 1 <= k <= sz, Only O(1) memory for follow-up solution.",
+    "followup": "Can the problem be solved in O(1) extra memory space?",
+    "title": "Reverse Nodes In K-Group",
+    "leetcode_url": "https://leetcode.com/problems/Reverse-Nodes-in-k-Group/",
+    "difficulty": "Hard"
+}

@@ -1,0 +1,46 @@
+Main things that have been completed:
+
+1. V1 of the backend langgraph has been completed: 
+    1.1 Router node that filters 3 diff responses
+    1.2 Node 1 which guides user when they're uncertain on what to do at all and provide initial guidance
+    1.3 Node 2 which is answering user questions because they're uncertain about how to move forward
+    1.4 Node 3 which evaluates the code that has been provided and figures out if it's good or not
+
+2. Currently in the midst of integrating the front-end to the backend: 
+    2.1 front-end has been completed
+    2.2 using flask to get the two to talk to each other
+    2.3 figuring out how to set up the endpoint with the backend
+    2.4 using docker to host in the meantime
+
+Next Steps:
+
+Backend: 
+1. Integrate with the ureca students agents and figure out which would be more ideal for this project (2-3days)
+2. Integrate with existing rubric that we've come up with to provide the user with some update on how they've performed overall (~hrs)
+3. Set up the list of leetcode questions and answers in a db (1 day) [done]
+4. Have the AI agent 3 grade the user using the ideal answers provided in the db itself (~hrs) (needa scrape the answers online)
+5. Create a state that stores user login information, past questions completed and past ratings provided to the student (half completed - need to create user view right now)
+
+Frontend: 
+1. Need to integrate the backend with the Frontend (2-3 days) (done)
+2. Change the current method of capturing user input from text input to voice input (~hrs) (not yet)
+3. Fix the IDE being used (aka monaco) to include syntax highlighting (~hrs)
+
+Others:
+1. Deployment (1 day)
+2. User testing (1 week, will run concurrently)
+3. 
+
+
+
+Notes:
+
+1. consider a serverless applicaiton like azure funciton. 
+2. create a webapp as an azure function which might be easier 
+3. 24th main submission for report, feedback will be provided by examinor and FYP coordinator, with ammendments then you can do the final 
+submission on 25th Apr whcih will go online 
+4. ideally 50 people should test the website if possible 
+
+
+
+

@@ -1,0 +1,10 @@
+{
+    "summary": "Maximize capital with project selection",
+    "question": "Given initial capital, pick at most k projects with profits and capital requirements to maximize final capital.",
+    "example": "Input: k = 2, w = 0, profits = [1,2,3], capital = [0,1,1]. Output: 4. Explanation: Start with project 0, earn profit 1, move to project 2, earn profit 3, final capital = 4.",
+    "constraint": "1 <= k <= 10^5, 0 <= w <= 10^9, 1 <= n <= 10^5, 0 <= profits[i] <= 10^4, 0 <= capital[i] <= 10^9, n == profits.length == capital.length.",
+    "followup": "How can this approach be optimized for larger constraints?",
+    "title": "Ipo",
+    "leetcode_url": "https://leetcode.com/problems/IPO/",
+    "difficulty": "Hard"
+}

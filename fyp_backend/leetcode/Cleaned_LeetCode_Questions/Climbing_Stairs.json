@@ -1,0 +1,10 @@
+{
+    "summary": "Find ways to climb stairs",
+    "question": "Given n steps, determine the number of distinct ways to climb to the top where each step is either 1 or 2 steps.",
+    "example": "Input: n = 2, Output: 2, Explanation: [1 step + 1 step, 2 steps]; Input: n = 3, Output: 3, Explanation: [1+1+1, 1+2, 2+1]",
+    "constraint": "1 <= n <= 45",
+    "followup": "",
+    "title": "Climbing Stairs",
+    "leetcode_url": "https://leetcode.com/problems/Climbing-Stairs/",
+    "difficulty": "Easy"
+}

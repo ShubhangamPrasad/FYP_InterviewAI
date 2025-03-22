@@ -1,0 +1,10 @@
+{
+    "summary": "Rotate linked list right k steps",
+    "question": "Given the head of a linked list, rotate it to the right by k places.",
+    "example": "Input: head = [1,2,3,4,5], k = 2; Output: [4,5,1,2,3]. Input: head = [0,1,2], k = 4; Output: [2,0,1].",
+    "constraint": "The number of nodes in the list is in the range [0, 500]. Node values are in the range [-100, 100]. k is in the range [0, 2 * 10^9].",
+    "followup": "",
+    "title": "Rotate List",
+    "leetcode_url": "https://leetcode.com/problems/Rotate-List/",
+    "difficulty": "Medium"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Determine course completion order",
+    "question": "Find the order of courses to complete all courses given a list of prerequisites, or return an empty array if impossible.",
+    "example": "Input: numCourses = 2, prerequisites = [[1,0]]; Output: [0,1]. Input: numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]; Output: [0,2,1,3]. Input: numCourses = 1, prerequisites = []; Output: [0].",
+    "constraint": "1 <= numCourses <= 2000, 0 <= prerequisites.length <= numCourses * (numCourses - 1), prerequisites[i].length == 2, 0 <= ai, bi < numCourses, ai != bi, all pairs [ai, bi] are distinct.",
+    "followup": "",
+    "title": "Course Schedule Ii",
+    "leetcode_url": "https://leetcode.com/problems/Course-Schedule-II/",
+    "difficulty": "Medium"
+}

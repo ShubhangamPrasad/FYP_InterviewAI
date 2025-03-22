@@ -1,0 +1,10 @@
+{
+    "summary": "Check binary tree path sum",
+    "question": "Determine if there is a root-to-leaf path in a binary tree where the sum of node values equals the given targetSum.",
+    "example": "Input: root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22; Output: true. Input: root = [1,2,3], targetSum = 5; Output: false. Input: root = [1,2], targetSum = 0; Output: false.",
+    "constraint": "The number of nodes in the tree is in the range [0, 5000]. Node values are between -1000 and 1000. targetSum is between -1000 and 1000.",
+    "followup": "",
+    "title": "Path Sum",
+    "leetcode_url": "https://leetcode.com/problems/Path-Sum/",
+    "difficulty": "Easy"
+}

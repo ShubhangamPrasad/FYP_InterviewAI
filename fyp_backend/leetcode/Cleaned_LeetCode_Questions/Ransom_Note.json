@@ -1,0 +1,10 @@
+{
+    "summary": "Check ransomNote from magazine",
+    "question": "Determine if ransomNote can be constructed from magazine using each letter only once.",
+    "example": "Input: ransomNote = 'aa', magazine = 'aab'; Output: true. Input: ransomNote = 'aa', magazine = 'ab'; Output: false.",
+    "constraint": "1 <= ransomNote.length, magazine.length <= 105. Both consist of lowercase English letters.",
+    "followup": "",
+    "title": "Ransom Note",
+    "leetcode_url": "https://leetcode.com/problems/Ransom-Note/",
+    "difficulty": "Easy"
+}

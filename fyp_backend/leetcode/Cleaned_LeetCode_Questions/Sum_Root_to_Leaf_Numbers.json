@@ -1,0 +1,10 @@
+{
+    "summary": "Sum of root-to-leaf numbers",
+    "question": "Given a binary tree of digits, calculate the total sum of numbers represented by all root-to-leaf paths.",
+    "example": "Input: root = [1,2,3]\nOutput: 25\nExplanation: Paths are 12 and 13, so sum = 12 + 13 = 25.\n\nInput: root = [4,9,0,5,1]\nOutput: 1026\nExplanation: Paths are 495, 491, and 40, so sum = 495 + 491 + 40 = 1026.",
+    "constraint": "1 <= Number of nodes <= 1000\n0 <= Node.val <= 9\nTree depth <= 10",
+    "followup": "",
+    "title": "Sum Root To Leaf Numbers",
+    "leetcode_url": "https://leetcode.com/problems/Sum-Root-to-Leaf-Numbers/",
+    "difficulty": "Medium"
+}

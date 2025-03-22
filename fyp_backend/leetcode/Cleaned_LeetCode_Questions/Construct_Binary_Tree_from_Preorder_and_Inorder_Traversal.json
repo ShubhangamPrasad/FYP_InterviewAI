@@ -1,0 +1,10 @@
+{
+    "summary": "Construct binary tree from traversals",
+    "question": "Given two integer arrays preorder and inorder, construct and return the binary tree represented by these traversals.",
+    "example": "Input: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]; Output: [3,9,20,null,null,15,7]. Input: preorder = [-1], inorder = [-1]; Output: [-1]",
+    "constraint": "1 <= preorder.length <= 3000, inorder.length == preorder.length, -3000 <= preorder[i], inorder[i] <= 3000. Both arrays consist of unique values. Each value in inorder also appears in preorder. preorder and inorder are guaranteed to represent valid traversals of the same tree.",
+    "followup": "",
+    "title": "Construct Binary Tree From Preorder And Inorder Traversal",
+    "leetcode_url": "https://leetcode.com/problems/Construct-Binary-Tree-from-Preorder-and-Inorder-Traversal/",
+    "difficulty": "Medium"
+}

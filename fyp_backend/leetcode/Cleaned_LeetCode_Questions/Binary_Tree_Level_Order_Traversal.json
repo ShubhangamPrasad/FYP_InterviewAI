@@ -1,0 +1,10 @@
+{
+    "summary": "Binary tree level order traversal",
+    "question": "Return the level order traversal of a binary tree's nodes' values, from left to right by each level.",
+    "example": "Input: root = [3,9,20,null,null,15,7]\nOutput: [[3],[9,20],[15,7]]\nInput: root = [1]\nOutput: [[1]]\nInput: root = []\nOutput: []",
+    "constraint": "The number of nodes in the tree is in the range [0, 2000]. Node values are in the range [-1000, 1000].",
+    "followup": "",
+    "title": "Binary Tree Level Order Traversal",
+    "leetcode_url": "https://leetcode.com/problems/Binary-Tree-Level-Order-Traversal/",
+    "difficulty": "Medium"
+}

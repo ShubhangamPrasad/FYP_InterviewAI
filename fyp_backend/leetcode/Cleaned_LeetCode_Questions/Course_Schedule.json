@@ -1,0 +1,10 @@
+{
+    "summary": "Check if all courses completable",
+    "question": "Determine if all courses can be completed given prerequisites as directed pairs of dependencies.",
+    "example": "Input: numCourses = 2, prerequisites = [[1,0]]; Output: true. Explanation: Course 1 depends on course 0, and it is completable.\nInput: numCourses = 2, prerequisites = [[1,0],[0,1]]; Output: false. Explanation: Courses 0 and 1 depend on each other, creating a cycle.",
+    "constraint": "1 <= numCourses <= 10^5, 0 <= prerequisites.length <= 5000, prerequisites[i].length == 2, 0 <= ai, bi < numCourses. All prerequisite pairs are unique.",
+    "followup": "",
+    "title": "Course Schedule",
+    "leetcode_url": "https://leetcode.com/problems/Course-Schedule/",
+    "difficulty": "Medium"
+}

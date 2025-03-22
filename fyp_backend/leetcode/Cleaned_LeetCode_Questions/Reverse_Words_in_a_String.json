@@ -1,0 +1,10 @@
+{
+    "summary": "Reverse words in a string",
+    "question": "Given a string with words separated by spaces, reverse the order of the words, removing additional spaces between, leading, or trailing spaces.",
+    "example": "Input: s = 'the sky is blue' Output: 'blue is sky the'\nInput: s = '  hello world  ' Output: 'world hello'\nInput: s = 'a good   example' Output: 'example good a'\nInput: s = '  Bob    Loves  Alice   ' Output: 'Alice Loves Bob'\nInput: s = 'Alice does not even like bob' Output: 'bob like even not does Alice'",
+    "constraint": "1 <= s.length <= 10^4, s contains English letters (upper-case and lower-case), digits, and spaces. There is at least one word in s.",
+    "followup": "If the string data type is mutable in your language, can you solve it in-place with O(1) extra space?",
+    "title": "Reverse Words In A String",
+    "leetcode_url": "https://leetcode.com/problems/Reverse-Words-in-a-String/",
+    "difficulty": "Medium"
+}

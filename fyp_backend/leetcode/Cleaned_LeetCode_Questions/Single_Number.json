@@ -1,0 +1,10 @@
+{
+    "summary": "Find single unique element",
+    "question": "Given a non-empty array of integers where every element appears twice except for one, find the single element that appears once. Implement a solution with linear runtime complexity and constant space usage.",
+    "example": "Input: nums = [2,2,1] Output: 1; Input: nums = [4,1,2,1,2] Output: 4; Input: nums = [1] Output: 1",
+    "constraint": "1 <= nums.length <= 30000, -30000 <= nums[i] <= 30000, each element appears twice except for one element.",
+    "followup": "",
+    "title": "Single Number",
+    "leetcode_url": "https://leetcode.com/problems/Single-Number/",
+    "difficulty": "Easy"
+}

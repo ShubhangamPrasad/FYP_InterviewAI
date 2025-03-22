@@ -1,0 +1,10 @@
+{
+    "summary": "Find max sum of circular subarray",
+    "question": "Given a circular integer array nums of length n, return the maximum possible sum of a non-empty subarray. A circular array means the end connects to the beginning, and subarrays may only include each element at most once.",
+    "example": "Input: nums = [1,-2,3,-2]; Output: 3\nInput: nums = [5,-3,5]; Output: 10\nInput: nums = [3,-1,2,-1]; Output: 4\nInput: nums = [3,-2,2,-3]; Output: 3\nInput: nums = [-2,-3,-1]; Output: -1",
+    "constraint": "1 <= nums.length <= 3 * 10^4\n-3 * 10^4 <= nums[i] <= 3 * 10^4",
+    "followup": "",
+    "title": "Maximum Sum Circular Subarray",
+    "leetcode_url": "https://leetcode.com/problems/Maximum-Sum-Circular-Subarray/",
+    "difficulty": "Medium"
+}

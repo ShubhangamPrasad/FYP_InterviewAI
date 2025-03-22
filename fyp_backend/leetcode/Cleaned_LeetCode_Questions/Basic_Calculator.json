@@ -1,0 +1,10 @@
+{
+    "summary": "Evaluate string arithmetic expression",
+    "question": "Implement a basic calculator to evaluate a valid expression string without using built-in functions like eval().",
+    "example": "Input: s = \"1 + 1\" -> Output: 2\nInput: s = \" 2-1 + 2 \" -> Output: 3\nInput: s = \"(1+(4+5+2)-3)+(6+8)\" -> Output: 23",
+    "constraint": "1 <= s.length <= 3 * 10^5. s consists of digits, '+', '-', '(', ')', and spaces. '+' is not unary. '-' may be unary inside parentheses. No consecutive operators. Result fits in signed 32-bit integer.",
+    "followup": "",
+    "title": "Basic Calculator",
+    "leetcode_url": "https://leetcode.com/problems/Basic-Calculator/",
+    "difficulty": "Hard"
+}

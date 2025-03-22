@@ -1,0 +1,10 @@
+{
+    "summary": "Text justification problem",
+    "question": "Format an array of strings such that each line has exactly maxWidth characters with left-right justification where extra spaces are evenly distributed, except for the last line which should be left-justified.",
+    "example": "Input: words = [\"This\", \"is\", \"an\", \"example\", \"of\", \"text\", \"justification.\"], maxWidth = 16; Output: [\"This    is    an\", \"example  of text\", \"justification.  \"]; Input: words = [\"Science\",\"is\",\"what\",\"we\",\"understand\",\"well\",\"enough\",\"to\",\"explain\",\"to\",\"a\",\"computer.\",\"Art\",\"is\",\"everything\",\"else\",\"we\",\"do\"], maxWidth = 20; Output: [\"Science  is  what we\", \"understand      well\", \"enough to explain to\", \"a  computer.  Art is\", \"everything  else  we\", \"do                  \"]",
+    "constraint": "1 <= words.length <= 300; 1 <= words[i].length <= 20; words[i] consists of only English letters and symbols; 1 <= maxWidth <= 100; words[i].length <= maxWidth",
+    "followup": "",
+    "title": "Text Justification",
+    "leetcode_url": "https://leetcode.com/problems/Text-Justification/",
+    "difficulty": "Hard"
+}

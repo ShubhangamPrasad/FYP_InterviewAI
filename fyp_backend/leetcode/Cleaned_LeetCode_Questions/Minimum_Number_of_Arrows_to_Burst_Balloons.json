@@ -1,0 +1,10 @@
+{
+    "summary": "Minimum arrows to burst balloons",
+    "question": "Given balloon diameters as start and end x-coordinates, determine the minimum number of vertical arrows required to burst all balloons.",
+    "example": "Input: points = [[10,16],[2,8],[1,6],[7,12]], Output: 2; Input: points = [[1,2],[3,4],[5,6],[7,8]], Output: 4; Input: points = [[1,2],[2,3],[3,4],[4,5]], Output: 2",
+    "constraint": "1 <= points.length <= 10^5, points[i].length == 2, -2^31 <= x_start < x_end <= 2^31 - 1",
+    "followup": "",
+    "title": "Minimum Number Of Arrows To Burst Balloons",
+    "leetcode_url": "https://leetcode.com/problems/Minimum-Number-of-Arrows-to-Burst-Balloons/",
+    "difficulty": "Medium"
+}

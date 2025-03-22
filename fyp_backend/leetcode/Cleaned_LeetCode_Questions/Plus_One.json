@@ -1,0 +1,10 @@
+{
+    "summary": "Increment array-represented integer",
+    "question": "Given an array of digits representing a large integer, increment the integer by one and return the resulting digit array.",
+    "example": "Input: digits = [1,2,3] Output: [1,2,4]. Input: digits = [4,3,2,1] Output: [4,3,2,2]. Input: digits = [9] Output: [1,0].",
+    "constraint": "1 <= digits.length <= 100, 0 <= digits[i] <= 9, no leading zeros in digits.",
+    "followup": "",
+    "title": "Plus One",
+    "leetcode_url": "https://leetcode.com/problems/Plus-One/",
+    "difficulty": "Easy"
+}

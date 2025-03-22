@@ -1,0 +1,10 @@
+{
+    "summary": "Capture surrounded regions in matrix",
+    "question": "Given an m x n matrix with 'X' and 'O', flip all 'O's to 'X's in regions surrounded by 'X' (not connected to the border).",
+    "example": "Input: board = [[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"O\",\"O\",\"X\"],[\"X\",\"X\",\"O\",\"X\"],[\"X\",\"O\",\"X\",\"X\"]]\nOutput: [[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"O\",\"X\",\"X\"]]",
+    "constraint": "1 <= m, n <= 200; board[i][j] is 'X' or 'O'; border-connected 'O's are not flipped.",
+    "followup": "",
+    "title": "Surrounded Regions",
+    "leetcode_url": "https://leetcode.com/problems/Surrounded-Regions/",
+    "difficulty": "Medium"
+}

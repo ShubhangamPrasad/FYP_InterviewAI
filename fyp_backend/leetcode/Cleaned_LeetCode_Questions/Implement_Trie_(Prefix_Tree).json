@@ -1,0 +1,10 @@
+{
+    "summary": "Implement a Trie data structure",
+    "question": "Design and implement a Trie class with insert, search, and startsWith functionalities.",
+    "example": "Input: [\"Trie\", \"insert\", \"search\", \"search\", \"startsWith\", \"insert\", \"search\"], [[], [\"apple\"], [\"apple\"], [\"app\"], [\"app\"], [\"app\"], [\"app\"]] Output: [null, null, true, false, true, null, true] Explanation: Trie trie = new Trie(); trie.insert(\"apple\"); trie.search(\"apple\"); // True trie.search(\"app\"); // False trie.startsWith(\"app\"); // True trie.insert(\"app\"); trie.search(\"app\"); // True",
+    "constraint": "1 <= word.length, prefix.length <= 2000; word and prefix consist only of lowercase English letters; at most 30,000 calls to insert, search, and startsWith methods combined.",
+    "followup": "How can we optimize trie memory for large datasets?",
+    "title": "Implement Trie (Prefix Tree)",
+    "leetcode_url": "https://leetcode.com/problems/Implement-Trie-(Prefix-Tree)/",
+    "difficulty": "Medium"
+}

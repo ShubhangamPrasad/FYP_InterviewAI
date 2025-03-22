@@ -1,0 +1,10 @@
+{
+    "summary": "Sum two binary strings",
+    "question": "Write a function that takes two binary strings a and b, and returns their sum as a binary string.",
+    "example": "Input: a = \"11\", b = \"1\"; Output: \"100\". Input: a = \"1010\", b = \"1011\"; Output: \"10101\".",
+    "constraint": "1 <= a.length, b.length <= 104. a and b consist only of '0' or '1'. Strings do not have leading zeros except for zero itself.",
+    "followup": "",
+    "title": "Add Binary",
+    "leetcode_url": "https://leetcode.com/problems/Add-Binary/",
+    "difficulty": "Easy"
+}

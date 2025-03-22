@@ -1,0 +1,10 @@
+{
+    "summary": "Check if two trees are identical",
+    "question": "Write a function to determine if two binary trees are structurally identical and their nodes have the same values.",
+    "example": "Example 1: Input: p = [1,2,3], q = [1,2,3] Output: true. Example 2: Input: p = [1,2], q = [1,null,2] Output: false. Example 3: Input: p = [1,2,1], q = [1,1,2] Output: false.",
+    "constraint": "Number of nodes in both trees is in the range [0, 100]. Node values are between -10^4 and 10^4.",
+    "followup": "",
+    "title": "Same Tree",
+    "leetcode_url": "https://leetcode.com/problems/Same-Tree/",
+    "difficulty": "Easy"
+}

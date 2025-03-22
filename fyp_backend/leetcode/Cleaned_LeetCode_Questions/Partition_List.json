@@ -1,0 +1,10 @@
+{
+    "summary": "Partition linked list by value",
+    "question": "Partition a linked list such that all nodes with values less than x appear before nodes with values greater than or equal to x, while preserving their original relative order.",
+    "example": "Input: head = [1,4,3,2,5,2], x = 3\nOutput: [1,2,2,4,3,5]\nInput: head = [2,1], x = 2\nOutput: [1,2]",
+    "constraint": "The number of nodes in the list is in the range [0, 200]. Node values are in the range -100 to 100. x is in the range -200 to 200.",
+    "followup": "",
+    "title": "Partition List",
+    "leetcode_url": "https://leetcode.com/problems/Partition-List/",
+    "difficulty": "Medium"
+}

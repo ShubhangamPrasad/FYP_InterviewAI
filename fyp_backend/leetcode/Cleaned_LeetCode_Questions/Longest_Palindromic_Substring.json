@@ -1,0 +1,23 @@
+{
+    "summary": "Find longest palindromic substring",
+    "question": "Given a string s, return the longest palindromic substring in s.",
+    "example": {
+        "input": [
+            "s = 'babad'",
+            "s = 'cbbd'",
+            "s = 'a'",
+            "s = 'ac'"
+        ],
+        "output": [
+            "'bab' or 'aba'",
+            "'bb'",
+            "'a'",
+            "'a'"
+        ]
+    },
+    "constraint": "1 <= s.length <= 1000. String s consists of only digits and English letters.",
+    "followup": "",
+    "title": "Longest Palindromic Substring",
+    "leetcode_url": "https://leetcode.com/problems/Longest-Palindromic-Substring/",
+    "difficulty": "Medium"
+}

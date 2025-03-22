@@ -1,0 +1,10 @@
+{
+    "summary": "Count solutions to n-queens puzzle",
+    "question": "Given an integer n, calculate the number of distinct solutions to the n-queens puzzle where no two queens attack each other on an n x n chessboard.",
+    "example": "Example 1: Input: n = 4, Output: 2. Example 2: Input: n = 1, Output: 1.",
+    "constraint": "1 <= n <= 9",
+    "followup": "",
+    "title": "N-Queens Ii",
+    "leetcode_url": "https://leetcode.com/problems/N-Queens-II/",
+    "difficulty": "Hard"
+}

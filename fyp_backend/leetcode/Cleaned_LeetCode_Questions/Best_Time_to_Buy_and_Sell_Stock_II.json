@@ -1,0 +1,10 @@
+{
+    "summary": "Find maximum stock trading profit",
+    "question": "Given an array of stock prices, find the maximum profit achievable by buying and selling the stock as many times as desired (with at most one share held at any time).",
+    "example": "Input: prices = [7,1,5,3,6,4] Output: 7. Buy on day 2 (1) and sell on day 3 (5) for profit 4. Then buy on day 4 (3) and sell on day 5 (6) for profit 3. Total = 4 + 3 = 7.",
+    "constraint": "1 <= prices.length <= 3000, 0 <= prices[i] <= 10000",
+    "followup": "",
+    "title": "Best Time To Buy And Sell Stock Ii",
+    "leetcode_url": "https://leetcode.com/problems/Best-Time-to-Buy-and-Sell-Stock-II/",
+    "difficulty": "Medium"
+}

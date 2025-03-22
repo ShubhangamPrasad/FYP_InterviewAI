@@ -1,0 +1,10 @@
+{
+    "summary": "Maximize stock trading profit",
+    "question": "Given an array 'prices', where 'prices[i]' is the stock price on day i, find the maximum profit from buying and selling once, ensuring the buy occurs before the sell. Return 0 if no profit is possible.",
+    "example": "Input: prices = [7,1,5,3,6,4] Output: 5 (Buy on day 2 at price 1 and sell on day 5 at price 6). Input: prices = [7,6,4,3,1] Output: 0 (No profit possible).",
+    "constraint": "1 <= prices.length <= 10^5, 0 <= prices[i] <= 10^4",
+    "followup": "",
+    "title": "Best Time To Buy And Sell Stock",
+    "leetcode_url": "https://leetcode.com/problems/Best-Time-to-Buy-and-Sell-Stock/",
+    "difficulty": "Easy"
+}

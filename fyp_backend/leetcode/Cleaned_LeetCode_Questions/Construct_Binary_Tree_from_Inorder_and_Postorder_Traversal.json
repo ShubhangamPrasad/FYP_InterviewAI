@@ -1,0 +1,10 @@
+{
+    "summary": "Reconstruct binary tree from traversals",
+    "question": "Given two integer arrays 'inorder' and 'postorder', representing the inorder and postorder traversals of a binary tree respectively, construct and return the binary tree.",
+    "example": "Input: inorder = [9,3,15,20,7], postorder = [9,15,7,20,3] -> Output: [3,9,20,null,null,15,7]; Input: inorder = [-1], postorder = [-1] -> Output: [-1]",
+    "constraint": "1 <= inorder.length <= 3000; postorder.length == inorder.length; -3000 <= inorder[i], postorder[i] <= 3000; inorder and postorder consist of unique values; All values in postorder appear in inorder; The given traversals are valid representations of the binary tree.",
+    "followup": "",
+    "title": "Construct Binary Tree From Inorder And Postorder Traversal",
+    "leetcode_url": "https://leetcode.com/problems/Construct-Binary-Tree-from-Inorder-and-Postorder-Traversal/",
+    "difficulty": "Medium"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Find unique element in array",
+    "question": "Find the single element in an integer array where every other element appears three times. Ensure linear runtime complexity and constant extra space usage.",
+    "example": "Input: nums = [2,2,3,2]\nOutput: 3\nInput: nums = [0,1,0,1,0,1,99]\nOutput: 99",
+    "constraint": "1 <= nums.length <= 3 * 10^4, -2^31 <= nums[i] <= 2^31 - 1, All elements appear exactly three times except one that appears once.",
+    "followup": "",
+    "title": "Single Number Ii",
+    "leetcode_url": "https://leetcode.com/problems/Single-Number-II/",
+    "difficulty": "Medium"
+}

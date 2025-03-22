@@ -1,0 +1,10 @@
+{
+    "summary": "Check if strings are anagrams",
+    "question": "Given two strings s and t, determine if t is an anagram of s, returning true if they are and false otherwise.",
+    "example": "Example 1: Input: s = 'anagram', t = 'nagaram' Output: true Example 2: Input: s = 'rat', t = 'car' Output: false",
+    "constraint": "1 <= s.length, t.length <= 5 * 10^4. Both strings consist of lowercase English letters.",
+    "followup": "What if the inputs contain Unicode characters? How would you adapt your solution to such a case?",
+    "title": "Valid Anagram",
+    "leetcode_url": "https://leetcode.com/problems/Valid-Anagram/",
+    "difficulty": "Easy"
+}

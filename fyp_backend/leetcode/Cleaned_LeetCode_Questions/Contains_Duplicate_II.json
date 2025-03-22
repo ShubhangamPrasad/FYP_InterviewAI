@@ -1,0 +1,10 @@
+{
+    "summary": "Check nearby duplicate indices",
+    "question": "Determine if an integer array contains two distinct indices i and j such that nums[i] == nums[j] and abs(i - j) <= k.",
+    "example": "Input: nums = [1,2,3,1], k = 3; Output: true. Input: nums = [1,0,1,1], k = 1; Output: true. Input: nums = [1,2,3,1,2,3], k = 2; Output: false.",
+    "constraint": "1 <= nums.length <= 10^5; -10^9 <= nums[i] <= 10^9; 0 <= k <= 10^5",
+    "followup": "",
+    "title": "Contains Duplicate Ii",
+    "leetcode_url": "https://leetcode.com/problems/Contains-Duplicate-II/",
+    "difficulty": "Easy"
+}

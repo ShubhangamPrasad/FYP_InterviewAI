@@ -1,0 +1,10 @@
+{
+    "summary": "Count trailing zeroes in factorial",
+    "question": "Given an integer n, return the number of trailing zeroes in n!.",
+    "example": "Input: n = 3, Output: 0 (Explanation: 3! = 6, no trailing zero)\nInput: n = 5, Output: 1 (Explanation: 5! = 120, one trailing zero)\nInput: n = 0, Output: 0",
+    "constraint": "0 <= n <= 10^4",
+    "followup": "Could you write a solution that works in logarithmic time complexity?",
+    "title": "Factorial Trailing Zeroes",
+    "leetcode_url": "https://leetcode.com/problems/Factorial-Trailing-Zeroes/",
+    "difficulty": "Medium"
+}

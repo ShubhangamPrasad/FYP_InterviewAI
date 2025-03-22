@@ -1,0 +1,10 @@
+{
+    "summary": "Convert integer to Roman numeral",
+    "question": "Given an integer, convert it to its Roman numeral representation.",
+    "example": "Input: num = 3, Output: 'III'; Input: num = 4, Output: 'IV'; Input: num = 9, Output: 'IX'; Input: num = 58, Output: 'LVIII'; Input: num = 1994, Output: 'MCMXCIV'",
+    "constraint": "1 <= num <= 3999",
+    "followup": "",
+    "title": "Integer To Roman",
+    "leetcode_url": "https://leetcode.com/problems/Integer-to-Roman/",
+    "difficulty": "Medium"
+}

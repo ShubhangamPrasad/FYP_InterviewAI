@@ -1,0 +1,10 @@
+{
+    "summary": "Count unique paths in grid",
+    "question": "How many unique paths are there from the top-left to the bottom-right corner of an m x n grid, considering obstacles represented as 1?",
+    "example": "Input: obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]] Output: 2; Input: obstacleGrid = [[0,1],[0,0]] Output: 1",
+    "constraint": "1 <= m, n <= 100; obstacleGrid[i][j] is either 0 or 1",
+    "followup": "",
+    "title": "Unique Paths Ii",
+    "leetcode_url": "https://leetcode.com/problems/Unique-Paths-II/",
+    "difficulty": "Medium"
+}

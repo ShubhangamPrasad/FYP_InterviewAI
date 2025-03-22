@@ -1,0 +1,10 @@
+{
+    "summary": "Reverse segment in linked list",
+    "question": "Reverse nodes in a singly linked list between positions left and right and return the modified list.",
+    "example": "Input: head = [1,2,3,4,5], left = 2, right = 4; Output: [1,4,3,2,5]\nInput: head = [5], left = 1, right = 1; Output: [5]",
+    "constraint": "1 <= n <= 500, -500 <= Node.val <= 500, 1 <= left <= right <= n",
+    "followup": "Could you do it in one pass?",
+    "title": "Reverse Linked List Ii",
+    "leetcode_url": "https://leetcode.com/problems/Reverse-Linked-List-II/",
+    "difficulty": "Medium"
+}

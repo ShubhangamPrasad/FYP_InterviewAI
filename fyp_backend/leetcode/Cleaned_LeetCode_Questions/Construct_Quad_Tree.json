@@ -1,0 +1,10 @@
+{
+    "summary": "Construct Quad-Tree from matrix",
+    "question": "Given an n x n matrix of 0's and 1's, construct a Quad-Tree representing the matrix as per the rules of Quad-Tree: if all values in a sub-grid are same, create a leaf node; otherwise, recursively divide the grid into four sub-grids.",
+    "example": "Input: grid = [[0,1],[1,0]]; Output: [[0,1],[1,0],[1,1],[1,1],[1,0]]; Explanation: Quad-Tree is constructed by recursively dividing the grid and storing values in nodes.",
+    "constraint": "n == grid.length == grid[i].length; n == 2^x where 0 <= x <= 6",
+    "followup": "Can this implementation handle larger grids efficiently?",
+    "title": "Construct Quad Tree",
+    "leetcode_url": "https://leetcode.com/problems/Construct-Quad-Tree/",
+    "difficulty": "Medium"
+}

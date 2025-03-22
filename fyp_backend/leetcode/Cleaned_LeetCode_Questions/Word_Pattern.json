@@ -1,0 +1,10 @@
+{
+    "summary": "Check string follows pattern",
+    "question": "Determine if a string follows a given pattern with a bijection between pattern characters and words in the string.",
+    "example": "Example 1: Input: pattern = \"abba\", s = \"dog cat cat dog\"; Output: true\nExample 2: Input: pattern = \"abba\", s = \"dog cat cat fish\"; Output: false\nExample 3: Input: pattern = \"aaaa\", s = \"dog cat cat dog\"; Output: false\nExample 4: Input: pattern = \"abba\", s = \"dog dog dog dog\"; Output: false",
+    "constraint": "1 <= pattern.length <= 300, pattern contains only lower-case English letters. 1 <= s.length <= 3000, s contains only lower-case English letters and spaces. No leading or trailing spaces in s. Words in s are separated by a single space.",
+    "followup": "",
+    "title": "Word Pattern",
+    "leetcode_url": "https://leetcode.com/problems/Word-Pattern/",
+    "difficulty": "Easy"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Merge sorted linked lists",
+    "question": "Merge k sorted linked lists into one sorted linked list.",
+    "example": "Input: [[1,4,5],[1,3,4],[2,6]]; Output: [1,1,2,3,4,4,5,6]\nInput: []; Output: []\nInput: [[]]; Output: []",
+    "constraint": "0 <= k <= 10^4, 0 <= lists[i].length <= 500, -10^4 <= lists[i][j] <= 10^4, lists[i] is sorted, sum of lists[i].length <= 10^4",
+    "followup": "",
+    "title": "Merge K Sorted Lists",
+    "leetcode_url": "https://leetcode.com/problems/Merge-k-Sorted-Lists/",
+    "difficulty": "Hard"
+}

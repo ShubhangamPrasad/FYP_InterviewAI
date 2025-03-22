@@ -1,0 +1,10 @@
+{
+    "summary": "Find minimum coins for amount",
+    "question": "Given an integer array 'coins' representing denominations and an integer 'amount', determine the minimum number of coins needed to make up that amount. Return -1 if it's impossible.",
+    "example": "Input: coins = [1,2,5], amount = 11; Output: 3. Explanation: 11 = 5 + 5 + 1",
+    "constraint": "1 <= coins.length <= 12, 1 <= coins[i] <= 2^31 - 1, 0 <= amount <= 10^4",
+    "followup": "",
+    "title": "Coin Change",
+    "leetcode_url": "https://leetcode.com/problems/Coin-Change/",
+    "difficulty": "Medium"
+}

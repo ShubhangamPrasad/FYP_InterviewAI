@@ -1,0 +1,10 @@
+{
+    "summary": "Check string segmentation with dictionary",
+    "question": "Determine if a string can be segmented into a sequence of dictionary words, allowing reuse of dictionary words.",
+    "example": "Input: s = 'leetcode', wordDict = ['leet', 'code']\nOutput: true\nExplanation: 'leetcode' can be segmented as 'leet code'.\n\nInput: s = 'applepenapple', wordDict = ['apple', 'pen']\nOutput: true\nExplanation: 'applepenapple' can be segmented as 'apple pen apple'.\n\nInput: s = 'catsandog', wordDict = ['cats', 'dog', 'sand', 'and', 'cat']\nOutput: false",
+    "constraint": "1 <= s.length <= 300\n1 <= wordDict.length <= 1000\n1 <= wordDict[i].length <= 20\nAll strings consist of lowercase English letters; wordDict strings are unique.",
+    "followup": "Can this be optimized further?",
+    "title": "Word Break",
+    "leetcode_url": "https://leetcode.com/problems/Word-Break/",
+    "difficulty": "Medium"
+}

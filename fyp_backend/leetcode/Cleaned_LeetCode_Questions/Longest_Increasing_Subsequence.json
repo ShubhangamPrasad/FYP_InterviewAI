@@ -1,0 +1,10 @@
+{
+    "summary": "Longest increasing subsequence length",
+    "question": "Find the length of the longest strictly increasing subsequence in an integer array.",
+    "example": "Input: nums = [10,9,2,5,3,7,101,18], Output: 4; Input: nums = [0,1,0,3,2,3], Output: 4; Input: nums = [7,7,7,7,7,7,7], Output: 1",
+    "constraint": "1 <= nums.length <= 2500, -10^4 <= nums[i] <= 10^4",
+    "followup": "Can you develop an O(n log(n)) algorithm?",
+    "title": "Longest Increasing Subsequence",
+    "leetcode_url": "https://leetcode.com/problems/Longest-Increasing-Subsequence/",
+    "difficulty": "Medium"
+}

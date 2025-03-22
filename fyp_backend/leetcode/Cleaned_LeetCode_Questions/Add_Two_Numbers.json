@@ -1,0 +1,10 @@
+{
+    "summary": "Add two numbers as linked lists",
+    "question": "Given two linked lists representing non-negative integers in reverse order, add the two numbers and return the sum as a linked list.",
+    "example": "Input: l1 = [2,4,3], l2 = [5,6,4]; Output: [7,0,8]. Input: l1 = [0], l2 = [0]; Output: [0]. Input: l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]; Output: [8,9,9,9,0,0,0,1].",
+    "constraint": "Each linked list has 1-100 nodes. Node values are in range [0, 9]. Lists do not contain leading zeros.",
+    "followup": "",
+    "title": "Add Two Numbers",
+    "leetcode_url": "https://leetcode.com/problems/Add-Two-Numbers/",
+    "difficulty": "Medium"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Find shortest word transformation length",
+    "question": "Given two words, beginWord and endWord, and a dictionary wordList, find the number of words in the shortest transformation sequence from beginWord to endWord, or return 0 if no such sequence exists. Every adjacent pair of words in the sequence must differ by one letter, and all sequence words must be in wordList.",
+    "example": "Input: beginWord = 'hit', endWord = 'cog', wordList = ['hot', 'dot', 'dog', 'lot', 'log', 'cog']; Output: 5. Input: beginWord = 'hit', endWord = 'cog', wordList = ['hot', 'dot', 'dog', 'lot', 'log']; Output: 0.",
+    "constraint": "1 <= beginWord.length <= 10; endWord.length == beginWord.length; 1 <= wordList.length <= 5000; wordList[i].length == beginWord.length; beginWord, endWord, and wordList[i] consist of lowercase English letters; beginWord != endWord; all words in wordList are unique.",
+    "followup": "",
+    "title": "Word Ladder",
+    "leetcode_url": "https://leetcode.com/problems/Word-Ladder/",
+    "difficulty": "Hard"
+}

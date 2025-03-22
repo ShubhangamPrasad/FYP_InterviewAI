@@ -1,0 +1,10 @@
+{
+    "summary": "Find minimum gene mutations",
+    "question": "Determine the minimum number of mutations required to transform a gene string 'start' into 'end', given that valid mutations must exist in the gene bank.",
+    "example": "Example 1: start = \"AACCGGTT\", end = \"AACCGGTA\", bank = [\"AACCGGTA\"]. Output: 1. Example 2: start = \"AACCGGTT\", end = \"AAACGGTA\", bank = [\"AACCGGTA\",\"AACCGCTA\",\"AAACGGTA\"]. Output: 2. Example 3: start = \"AAAAACCC\", end = \"AACCCCCC\", bank = [\"AAAACCCC\",\"AAACCCCC\",\"AACCCCCC\"]. Output: 3.",
+    "constraint": "start.length == 8, end.length == 8, 0 <= bank.length <= 10, bank[i].length == 8, all strings consist of ['A', 'C', 'G', 'T']",
+    "followup": "",
+    "title": "Minimum Genetic Mutation",
+    "leetcode_url": "https://leetcode.com/problems/Minimum-Genetic-Mutation/",
+    "difficulty": "Medium"
+}

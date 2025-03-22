@@ -1,0 +1,10 @@
+{
+    "summary": "Sort linked list in ascending order",
+    "question": "Given the head of a linked list, return the list sorted in ascending order. Can you achieve O(n logn) time and O(1) space complexity?",
+    "example": "Example 1:\nInput: head = [4,2,1,3]\nOutput: [1,2,3,4]\nExample 2:\nInput: head = [-1,5,3,4,0]\nOutput: [-1,0,3,4,5]\nExample 3:\nInput: head = []\nOutput: []",
+    "constraint": "The number of nodes in the list is in the range [0, 50000]. Node values range from -100000 to 100000.",
+    "followup": "Can you sort the linked list in O(n logn) time and O(1) memory?",
+    "title": "Sort List",
+    "leetcode_url": "https://leetcode.com/problems/Sort-List/",
+    "difficulty": "Medium"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Find maximum depth of binary tree",
+    "question": "Given the root of a binary tree, return its maximum depth, defined as the number of nodes along the longest path from the root to the farthest leaf node.",
+    "example": "Input: root = [3,9,20,null,null,15,7]; Output: 3\nInput: root = [1,null,2]; Output: 2\nInput: root = []; Output: 0\nInput: root = [0]; Output: 1",
+    "constraint": "The number of nodes in the tree is in the range [0, 10^4]. Node values are in the range [-100, 100].",
+    "followup": "",
+    "title": "Maximum Depth Of Binary Tree",
+    "leetcode_url": "https://leetcode.com/problems/Maximum-Depth-of-Binary-Tree/",
+    "difficulty": "Easy"
+}

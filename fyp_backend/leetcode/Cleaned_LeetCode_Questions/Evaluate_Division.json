@@ -1,0 +1,10 @@
+{
+    "summary": "Evaluate division based on equations",
+    "question": "Given equations and values, determine the results of queries on division relationships between variables. Return -1.0 if the result cannot be determined.",
+    "example": "Input: equations = [[\"a\",\"b\"],[\"b\",\"c\"]], values = [2.0,3.0], queries = [[\"a\",\"c\"],[\"b\",\"a\"],[\"a\",\"e\"],[\"a\",\"a\"],[\"x\",\"x\"]]\nOutput: [6.00000,0.50000,-1.00000,1.00000,-1.00000]",
+    "constraint": "1 <= equations.length <= 20, equations[i].length == 2, 1 <= Ai.length, Bi.length <= 5, 0.0 < values[i] <= 20.0, 1 <= queries.length <= 20, queries[i].length == 2, 1 <= Cj.length, Dj.length <= 5. Variables are lowercase English letters and digits.",
+    "followup": "",
+    "title": "Evaluate Division",
+    "leetcode_url": "https://leetcode.com/problems/Evaluate-Division/",
+    "difficulty": "Medium"
+}

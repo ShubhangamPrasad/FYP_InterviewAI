@@ -1,0 +1,10 @@
+{
+    "summary": "Design a stack with min retrieval",
+    "question": "Implement a stack class supporting push, pop, top, and getMin operations in constant time.",
+    "example": "Input: [\"MinStack\",\"push\",\"push\",\"push\",\"getMin\",\"pop\",\"top\",\"getMin\"], [[],[-2],[0],[-3],[],[],[],[]] Output: [null,null,null,null,-3,null,0,-2]",
+    "constraint": "-2^31 <= val <= 2^31 - 1. Methods pop, top, and getMin will always be called on non-empty stacks. A maximum of 30,000 calls will be made to methods.",
+    "followup": "",
+    "title": "Min Stack",
+    "leetcode_url": "https://leetcode.com/problems/Min-Stack/",
+    "difficulty": "Medium"
+}

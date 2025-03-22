@@ -1,0 +1,10 @@
+{
+    "summary": "Distribute candies based on ratings",
+    "question": "Find the minimum number of candies required to distribute among children such that each child has at least one candy and children with higher ratings get more candies than their neighbors.",
+    "example": "Input: ratings = [1,0,2]\nOutput: 5\nExplanation: Allocate candies as [2,1,2].\nInput: ratings = [1,2,2]\nOutput: 4\nExplanation: Allocate candies as [1,2,1].",
+    "constraint": "1 <= n == ratings.length <= 2 * 10^4; 0 <= ratings[i] <= 2 * 10^4",
+    "followup": "",
+    "title": "Candy",
+    "leetcode_url": "https://leetcode.com/problems/Candy/",
+    "difficulty": "Hard"
+}

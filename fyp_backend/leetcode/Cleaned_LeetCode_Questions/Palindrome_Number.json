@@ -1,0 +1,10 @@
+{
+    "summary": "Check if integer is palindrome",
+    "question": "Determine whether a given integer x reads the same backward as forward.",
+    "example": "Input: x = 121, Output: true; Input: x = -121, Output: false; Input: x = 10, Output: false",
+    "constraint": "-2^31 <= x <= 2^31 - 1",
+    "followup": "Could you solve it without converting the integer to a string?",
+    "title": "Palindrome Number",
+    "leetcode_url": "https://leetcode.com/problems/Palindrome-Number/",
+    "difficulty": "Easy"
+}

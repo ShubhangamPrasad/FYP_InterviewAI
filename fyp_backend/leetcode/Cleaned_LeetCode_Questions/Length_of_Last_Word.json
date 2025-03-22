@@ -1,0 +1,10 @@
+{
+    "summary": "Find last word's length",
+    "question": "Given a string containing words separated by spaces, return the length of the last word. A word is defined as a maximal substring consisting of non-space characters.",
+    "example": "Input: s = 'Hello World' -> Output: 5; Input: s = '   fly me   to   the moon  ' -> Output: 4; Input: s = 'luffy is still joyboy' -> Output: 6",
+    "constraint": "1 <= s.length <= 104, s consists of only English letters and spaces, and there will be at least one word.",
+    "followup": "",
+    "title": "Length Of Last Word",
+    "leetcode_url": "https://leetcode.com/problems/Length-of-Last-Word/",
+    "difficulty": "Easy"
+}

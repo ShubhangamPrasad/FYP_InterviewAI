@@ -1,0 +1,10 @@
+{
+    "summary": "Calculate x raised to power n",
+    "question": "Implement a function pow(x, n) to calculate x raised to the power n.",
+    "example": "Example 1: Input: x=2.00000, n=10 Output: 1024.00000\nExample 2: Input: x=2.10000, n=3 Output: 9.26100\nExample 3: Input: x=2.00000, n=-2 Output: 0.25000",
+    "constraint": "-100.0 < x < 100.0, -2^31 <= n <= 2^31 - 1, -10^4 <= x^n <= 10^4",
+    "followup": "",
+    "title": "Pow(X, N)",
+    "leetcode_url": "https://leetcode.com/problems/Pow(x,-n)/",
+    "difficulty": "Medium"
+}

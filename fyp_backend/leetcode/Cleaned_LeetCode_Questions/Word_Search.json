@@ -1,0 +1,10 @@
+{
+    "summary": "Check word existence in grid",
+    "question": "Given an m x n grid 'board' of characters and a string 'word', determine if the 'word' can be formed by sequentially adjacent characters in the grid (horizontally or vertically). Each letter cell can be used only once.",
+    "example": "Input: board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"ABCCED\"; Output: true. Input: board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"SEE\"; Output: true. Input: board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"ABCB\"; Output: false.",
+    "constraint": "1 <= m, n <= 6; 1 <= word.length <= 15; 'board' and 'word' consist of only lowercase and uppercase English letters.",
+    "followup": "Could you use search pruning to make your solution faster with a larger grid?",
+    "title": "Word Search",
+    "leetcode_url": "https://leetcode.com/problems/Word-Search/",
+    "difficulty": "Medium"
+}

@@ -1,0 +1,10 @@
+{
+    "summary": "Count islands in binary grid",
+    "question": "Given a 2D binary grid where '1' represents land and '0' represents water, return the number of islands in the grid. An island is surrounded by water and formed by connecting adjacent lands horizontally or vertically. Assume the grid edges are surrounded by water.",
+    "example": "Example 1: Input: grid = [['1','1','1','1','0'], ['1','1','0','1','0'], ['1','1','0','0','0'], ['0','0','0','0','0']] Output: 1 Example 2: Input: grid = [['1','1','0','0','0'], ['1','1','0','0','0'], ['0','0','1','0','0'], ['0','0','0','1','1']] Output: 3",
+    "constraint": "1 <= m, n <= 300; grid[i][j] is either '0' or '1'",
+    "followup": "Can we optimize for larger grids?",
+    "title": "Number Of Islands",
+    "leetcode_url": "https://leetcode.com/problems/Number-of-Islands/",
+    "difficulty": "Medium"
+}
