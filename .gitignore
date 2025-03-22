@@ -1,5 +1,5 @@
 # Ignore backend virtual environment
-fyp_backend/backend/
+fyp_backend/backend
 
 # Ignore frontend virtual environment
-fyp_frontend/venv/
+fyp_frontend/venv

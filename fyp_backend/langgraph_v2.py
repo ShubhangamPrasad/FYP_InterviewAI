@@ -486,11 +486,9 @@ def respond():
 
         # Step 2: Stream the response word by word (only text, no audio here)
         full_response = next_state.get("output", ["No response"])[-1]
-        buffer = ""
-
-        # Yielding only text here
+        
+        # Yielding each word immediately (without buffering)
         for word in full_response.split():
-            buffer += word + " "
             yield word + " "  # Yield only the text part, no audio here
 
         # Step 3: After response is fully sent → summarize conversation
@@ -498,7 +496,7 @@ def respond():
         session_store[session_id] = {
             "input": [next_input],
             "decision": next_state["decision"],
-            "output": [buffer.strip()],
+            "output": [full_response],
             "interaction_summary": new_summary,
             "start_time": current_state.get("start_time"),
             "duration": current_state.get("duration", 0)

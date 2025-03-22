@@ -223,33 +223,65 @@ const handleSendMessage = async (e: React.FormEvent | React.KeyboardEvent) => {
       const { done, value } = await reader.read();
       if (done) break;
 
-      aiMsg += decoder.decode(value, { stream: true });
+const chunk = decoder.decode(value, { stream: true });
+aiMsg += chunk;
 
-      // Update AI response text in the chat
-      setConversation(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { role: 'ai', message: aiMsg };
-        return updated;
+setConversation(prev => {
+  const updated = [...prev];
+  updated[updated.length - 1] = {
+    role: 'ai',
+    message: (updated[updated.length - 1]?.message || '') + chunk
+  };
+  return updated;
+});
+
+
+      // Trigger TTS asynchronously (in the background) so it doesn't block the text chat
+      const playAudio = async () => {
+        try {
+          const ttsResponse = await fetch(`${API_BASE_URL}/openai_tts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: aiMsg })
+          });
+
+          if (!ttsResponse.body) {
+            console.error("No audio stream from OpenAI.");
+          } else {
+            // Stream the audio from OpenAI as it arrives
+            const audioStream = ttsResponse.body;
+            playTTS(audioStream);  // Play the audio stream in real-time
+          }
+        } catch (error) {
+          console.error("Error during TTS streaming:", error);
+        }
+      };
+
+      // Call the async function for TTS without waiting for it
+      playAudio();
+
+    }
+
+    // Call /partial-eval asynchronously only **once** after the entire response
+    try {
+      const evalResponse = await fetch(`${API_BASE_URL}/partial-eval`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          user_input: userMsg,
+          ai_response: aiMsg
+        })
       });
 
-      // Play TTS audio after each chunk of text is processed using /openai_tts
-      try {
-        const ttsResponse = await fetch(`${API_BASE_URL}/openai_tts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: aiMsg })
-        });
-
-        if (!ttsResponse.body) {
-          console.error("No audio stream from OpenAI.");
-        } else {
-          // Stream the audio from OpenAI as it arrives
-          const audioStream = ttsResponse.body;
-          playTTS(audioStream);  // Play the audio stream in real-time
-        }
-      } catch (error) {
-        console.error("Error during TTS streaming:", error);
+      if (!evalResponse.ok) {
+        console.error("Error during partial evaluation.");
+      } else {
+        const evalData = await evalResponse.json();
+        console.log("Partial evaluation result:", evalData.partial_evaluation);
       }
+    } catch (error) {
+      console.error("Error calling /partial-eval:", error);
     }
 
   } catch (error) {
@@ -257,6 +289,7 @@ const handleSendMessage = async (e: React.FormEvent | React.KeyboardEvent) => {
     setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
   }
 };
+
 
 
   return (
