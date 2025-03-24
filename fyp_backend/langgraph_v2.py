@@ -9,30 +9,29 @@ from openai import AzureOpenAI
 from langgraph.graph import StateGraph
 from typing import TypedDict, Annotated, Dict, List
 import operator
+from dotenv import load_dotenv
+load_dotenv()
+import mysql.connector
+import jwt
+import datetime
+from pydantic import BaseModel
+import tempfile
+import azure.cognitiveservices.speech as speechsdk
+from azure.cognitiveservices.speech.audio import AudioOutputStream
+import tempfile
+import io
+import re
 from db_connector import get_random_question 
 from db_connector import get_all_questions
 from db_connector import get_question_by_id
 from db_connector import get_all_summaries
 from db_connector import get_user
 from user_login import create_user
-import mysql.connector
-import jwt
-import datetime
-from pydantic import BaseModel
 from evaluation import evaluation_agent 
 from evaluation import partial_evaluation_agent
 from db_connector import get_user_feedback_history
 from db_connector import update_user_progress_by_email
-import tempfile
 from google.cloud import texttospeech
-import azure.cognitiveservices.speech as speechsdk
-from azure.cognitiveservices.speech.audio import AudioOutputStream
-import tempfile
-import io
-import re
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
 # Apply CORS with the correct origin and credentials support:
@@ -1013,7 +1012,7 @@ def transcribe_audio():
 @app.route("/azure_tts", methods=["POST", "OPTIONS"])
 def azure_tts():
     """Generate speech using Azure Speech SDK and stream back MP3."""
-    AZURE_TTS_KEY = os.env("AZURE_SPEECH_TTS_KEY")
+    AZURE_TTS_KEY = os.getenv("AZURE_SPEECH_TTS_KEY")
     AZURE_TTS_REGION = "eastus"
 
     if request.method == "OPTIONS":
