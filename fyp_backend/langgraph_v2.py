@@ -1009,6 +1009,10 @@ def transcribe_audio():
         response.status_code = 500
         return response
 
+@app.route('/test')
+def test():
+    return "It works on Azure!"
+
 @app.route("/azure_tts", methods=["POST", "OPTIONS"])
 def azure_tts():
     """Generate speech using Azure Speech SDK and stream back MP3."""
