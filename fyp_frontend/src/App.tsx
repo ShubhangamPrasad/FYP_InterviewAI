@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import Home from "./Home";
+import Home from "./home";
 import Landing from "./landing";
 import Interview from "./interview";
 import Login from "./login";
