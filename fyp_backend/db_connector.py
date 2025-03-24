@@ -6,10 +6,11 @@ import json
 
 # MySQL Database Configuration
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",  # Change if using another MySQL user
-    "password": "Shubham2340",  # Replace with your MySQL password
-    "database": "ai_interview"
+    "host": "aiviewmysql.mysql.database.azure.com",
+    "user": "aiview",
+    "password": "#PRASAD SHUBHANGAM RAJESH#123",
+    "database": "ai_interview",
+    "ssl_disabled": False  # 👈 Required for Azure
 }
 
 def get_random_question():

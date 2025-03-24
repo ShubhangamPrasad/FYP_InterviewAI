@@ -24,6 +24,12 @@ from evaluation import partial_evaluation_agent
 from db_connector import get_user_feedback_history
 from db_connector import update_user_progress_by_email
 import tempfile
+from google.cloud import texttospeech
+import azure.cognitiveservices.speech as speechsdk
+from azure.cognitiveservices.speech.audio import AudioOutputStream
+import tempfile
+import io
+import re
 
 
 app = Flask(__name__)
@@ -62,13 +68,23 @@ client = AzureOpenAI(
 )
 
 # Initialize Azure OpenAI client for TTS
-tts_client = AzureOpenAI(
+tts_hd_client = AzureOpenAI(
     api_version="2024-05-01-preview",
     api_key="9V14rjXQyvhKQX8SXDCxaVD5hYhxIh3Alj6uWptcjVWWLRpQmA2MJQQJ99BAACfhMk5XJ3w3AAAAACOGp0EO",
     azure_endpoint="https://shubh-m6c24v3y-swedencentral.cognitiveservices.azure.com/"
 )
 
+realtime_client = AzureOpenAI(
+    api_key="EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe",
+    azure_endpoint="https://aiview-azureopenai.openai.azure.com",
+    api_version="2024-10-01-preview"
+)
 
+whisper_client = AzureOpenAI(
+    api_key="EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe",
+    azure_endpoint="https://aiview-azureopenai.openai.azure.com",
+    api_version="2024-06-01"
+)
 # __________________________ DEFINING NODES __________________________
 
 def node3(state: State) -> State:
@@ -123,7 +139,8 @@ def node4(state: State) -> State:
     The user is confused and needs some guidance. Provide the user with some guidance questions on how to proceed without giving them the answer. \
     Remember this is a conversation, so leave room for further discussion. \
     You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
-    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant.\
+    Try to add some random human elements just to sound as natural as possible.\
+    NO EMOJI\
     Make sure you are concise in your response! No more than 3 sentences"
     
     response = client.chat.completions.create(
@@ -151,7 +168,8 @@ def node5(state: State) -> State:
     might ask, without giving them any new information. Leave room for further discussion.\
     If you look at past summary and you feel like the user has not written any code, encourage them to start writing.\
     You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
-    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant.\
+    Try to add some random human elements just to sound as natural as possible.\
+    NO EMOJI\
         Make sure you are concise in your response! No more than 3 sentences"
     
     response = client.chat.completions.create(
@@ -181,7 +199,8 @@ def node6(state: State) -> State:
     If code has been written then firstly most importantly, ensure that the code given is correct! If it's not tell them what is wrong but dont give answer \
     If all is good, slightly modify the question parameters for a harder challenge. \
     You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
-    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant. \
+    Try to add some random human elements just to sound as natural as possible.\
+    NO EMOJI\
     Make sure you are concise in your response! Remember to respond as an interviewer back to the candidate! No more than 3 sentences"
     
     response = client.chat.completions.create(
@@ -213,7 +232,8 @@ def node8(state: State) -> State:
     The user is not answering the question but asking a pertinent basic questions.\
     Provide a response to the user's question.\
     You're a friendly and supportive coding interviewer having a conversation. Be casual, encouraging, and ask questions naturally. \
-    Say things like 'Hmm, that's an interesting take...' or 'You're getting there!' if relevant.\
+    Try to add some random human elements just to sound as natural as possible.\
+    NO EMOJI\
         Make sure you are concise in your response! No more than 3 sentences"
     
     response = client.chat.completions.create(
@@ -477,21 +497,31 @@ def respond():
 
     @stream_with_context
     def generate_stream():
-        # Step 1: Run LangGraph (routes to the right node)
         next_state = app_graph.invoke({
             "input": [next_input],
             "decision": [],
             "output": []
         })
 
-        # Step 2: Stream the response word by word (only text, no audio here)
         full_response = next_state.get("output", ["No response"])[-1]
         
-        # Yielding each word immediately (without buffering)
+        sentence_buffer = ""
         for word in full_response.split():
-            yield word + " "  # Yield only the text part, no audio here
+            sentence_buffer += word + " "
+            yield word + " "
+            time.sleep(0.01)
 
-        # Step 3: After response is fully sent → summarize conversation
+            # 🔍 Sentence boundary detection (basic)
+            if re.search(r'[.!?]["\']?\s*$', sentence_buffer):
+                # 👇 This could push sentence to TTS queue (e.g., frontend or SSE)
+                yield f"[TTS_START]{sentence_buffer.strip()}[TTS_END]"
+                sentence_buffer = ""
+
+        # Edge case: leftover fragment
+        if sentence_buffer.strip():
+            yield f"[TTS_START]{sentence_buffer.strip()}[TTS_END]"
+
+        # Update session
         new_summary = summarize_conversation(session_id, user_input, new_code_written)
         session_store[session_id] = {
             "input": [next_input],
@@ -655,8 +685,6 @@ def partial_eval():
     # Now call your partial evaluation logic
     partial_evaluation = evaluate_response_partially(session_id)
 
-    print(partial_evaluation)
-
     return apply_cors(jsonify({
         "partial_evaluation": partial_evaluation
     }))
@@ -783,14 +811,12 @@ def user_history():
     except Exception as e:
         print("❌ Unexpected error in /user-history:", e)
         return apply_cors(jsonify({"error": "Internal server error"}), 500)
-    
-
-ELEVENLABS_API_KEY = "sk_d10cf7e8636df4b40346285c66e0581c329c77f31d993c43"
-ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # e.g. Rachel
 
 @app.route('/elevenlabs_tts', methods=['POST', 'OPTIONS'])
 def elevenlabs_tts():
     """Handles ElevenLabs TTS with proper CORS support."""
+    ELEVENLABS_API_KEY = "sk_d10cf7e8636df4b40346285c66e0581c329c77f31d993c43"
+    ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # e.g. Rachel
     if request.method == "OPTIONS":
         response = jsonify({"message": "CORS Preflight OK"})
         response.status_code = 204  # ✅ Respond correctly to preflight
@@ -854,7 +880,7 @@ def openai_tts():
 
     try:
         # Use the Azure OpenAI client to generate TTS audio
-        response = tts_client.audio.speech.create(
+        response = tts_hd_client.audio.speech.create(
             model="tts-hd",  # Choose the appropriate TTS model (e.g., "tts-hd" for high quality)
             voice="nova",    # Choose the voice (this can vary based on the available voices)
             input=text
@@ -877,6 +903,152 @@ def openai_tts():
         print(f"Error during TTS generation: {e}")
         return apply_cors(Response("Internal server error during TTS generation.", status=500, mimetype='text/plain'))
 
+@app.route('/gpt4o_realtime_tts', methods=['POST', 'OPTIONS'])
+def gpt4o_realtime_tts():
+    """Handles TTS generation using gpt-4o-mini-realtime-preview from Azure Foundry."""
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        response.status_code = 204
+        return apply_cors(response)
+
+    text = request.json.get("text", "")
+    if not text:
+        return apply_cors(jsonify({"error": "No text provided"}), 400)
+
+    try:
+        # Use Azure OpenAI client to generate TTS audio using GPT-4o mini real-time model
+        response = realtime_client.audio.speech.create(
+            model="gpt-4o-mini-realtime-preview",  # ✅ Your custom Foundry model
+            voice="Alloy",                          # ✅ Compatible voice
+            input=text
+        )
+
+        # Stream audio back to frontend
+        if response:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
+                response.stream_to_file(f.name)
+                temp_path = f.name
+
+            return apply_cors(send_file(temp_path, mimetype="audio/mpeg"))
+
+        else:
+            print("Error: No audio content returned from GPT-4o mini realtime model.")
+            return apply_cors(Response("Failed to generate audio", status=500, mimetype='text/plain'))
+
+    except Exception as e:
+        print(f"Error during GPT-4o realtime TTS generation: {e}")
+        return apply_cors(Response("Internal server error during TTS generation.", status=500, mimetype='text/plain'))
+
+google_tts_client = texttospeech.TextToSpeechClient()
+@app.route("/google_tts", methods=["POST", "OPTIONS"])
+def google_tts():
+    """Generate speech using Google Cloud Text-to-Speech API."""
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        response.status_code = 204
+        return apply_cors(response)
+
+
+    data = request.get_json()
+    text = data.get("text", "")
+    if not text:
+        return apply_cors(jsonify({"error": "No text provided"}), 400)
+
+    try:
+        synthesis_input = texttospeech.SynthesisInput(text=text)
+
+        voice = texttospeech.VoiceSelectionParams(
+            language_code="en-US",
+            name="en-US-Chirp3-HD-Orus",
+            ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+        )
+
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3
+        )
+
+        response = google_tts_client.synthesize_speech(
+            input=synthesis_input,
+            voice=voice,
+            audio_config=audio_config
+        )
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as out:
+            out.write(response.audio_content)
+            temp_path = out.name
+
+        return apply_cors(send_file(temp_path, mimetype="audio/mpeg"))
+
+    except Exception as e:
+        print(f"❌ Google TTS Error: {e}")
+        return apply_cors(Response("Internal server error during Google TTS.", status=500, mimetype="text/plain"))
+
+@app.route('/transcribe', methods=['POST', 'OPTIONS'])
+def transcribe_audio():
+    if request.method == "OPTIONS":
+        return apply_cors(jsonify({"message": "CORS Preflight OK"}))
+
+    file = request.files.get("audio")
+    if not file:
+        return apply_cors(jsonify({"error": "No audio file provided"}))
+
+    try:
+        audio_bytes = file.read()
+
+        result = whisper_client.audio.transcriptions.create(
+            model="whisper",
+            file=("audio.webm", audio_bytes)
+        )
+        print("✅ Whisper transcription result:", result.text)
+
+        return apply_cors(jsonify({"transcript": result.text}))
+    except Exception as e:
+        print("❌ Whisper transcription error:", e)
+        response = apply_cors(jsonify({"error": str(e)}))
+        response.status_code = 500
+        return response
+
+@app.route("/azure_tts", methods=["POST", "OPTIONS"])
+def azure_tts():
+    """Generate speech using Azure Speech SDK and stream back MP3."""
+    AZURE_TTS_KEY = "7vFftkUPiOXwiHeM3JK4BGBSPnd8KhLWMj9SF5rZ1RkSqhdcYL04JQQJ99BCACYeBjFXJ3w3AAAYACOGlLwd"
+    AZURE_TTS_REGION = "eastus"
+
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS Preflight OK"})
+        response.status_code = 204
+        return apply_cors(response)
+
+    data = request.get_json()
+    text = data.get("text", "")
+    if not text:
+        return apply_cors(jsonify({"error": "No text provided"}), 400)
+
+    # ✅ Log the sentence being synthesized
+    print(f"🗣️ Azure TTS requested for sentence: {repr(text)}")
+
+    try:
+        speech_config = speechsdk.SpeechConfig(subscription=AZURE_TTS_KEY, region=AZURE_TTS_REGION)
+        speech_config.speech_synthesis_voice_name = "en-US-LewisMultilingualNeural"
+        speech_config.set_speech_synthesis_output_format(
+            speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
+        )
+
+        synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
+        result = synthesizer.speak_text_async(text).get()
+
+        if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
+            raise Exception(f"TTS failed: {result.reason}")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as out:
+            out.write(result.audio_data)
+            temp_path = out.name
+
+        return apply_cors(send_file(temp_path, mimetype="audio/mpeg"))
+
+    except Exception as e:
+        print(f"❌ Azure TTS Error: {e}")
+        return apply_cors(Response("Internal server error during Azure TTS.", status=500, mimetype="text/plain"))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -61,6 +61,19 @@ const App: React.FC = () => {
 
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // --- TTS Queue Management ---
+  let isPlaying = false;
+  const ttsAudioBufferQueue: AudioBuffer[] = [];
+  let lastQueuedSentence = '';
+  const audioContext = new AudioContext();
+  
+
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+
+
   // 1. Fetch question and init session
   useEffect(() => {
     if (!questionId) return;
@@ -177,118 +190,240 @@ const App: React.FC = () => {
       window.location.assign("/profile");
     }
   };
-  
 
 
-  // 5. Sending messages to your AI
-// Updated handleSendMessage function: Maintain existing behavior + add TTS streaming
-const handleSendMessage = async (e: React.FormEvent | React.KeyboardEvent) => {
-  e.preventDefault();
-  if (!sessionId || inputMessage.trim() === '') {
-    console.error("Missing session_id or empty inputMessage.");
-    return;
+// Function to play audio stream from TTS endpoint
+const playTTSStream = async (stream: ReadableStream<Uint8Array>) => {
+  const audioContext = new AudioContext();
+  const source = audioContext.createBufferSource();
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
   }
 
-  const userMsg = inputMessage;
-  setInputMessage('');
+  const audioData = new Blob(chunks, { type: "audio/mpeg" });
+  const arrayBuffer = await audioData.arrayBuffer();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-  // Show user message immediately in the chat
-  setConversation(prev => [...prev, { role: 'user', message: userMsg }]);
+  source.buffer = audioBuffer;
+  source.connect(audioContext.destination);
+  source.start();
 
-  // Add placeholder AI response (text only) to be filled progressively
-  setConversation(prev => [...prev, { role: 'ai', message: '' }]);
+  await new Promise(resolve => {
+    source.onended = resolve;
+  });
+};
 
+const preloadSentenceAudio = async (sentence: string) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/respond`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        session_id: sessionId,
-        user_input: userMsg,
-        new_code_written: code
-      })
+    const response = await fetch(`${API_BASE_URL}/azure_tts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: sentence })
     });
 
-    if (!response.body) {
-      console.error("No response stream");
-      throw new Error("Stream failed");
-    }
+    if (!response.body) return;
 
     const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-
-    let aiMsg = '';
+    const chunks: Uint8Array[] = [];
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-
-const chunk = decoder.decode(value, { stream: true });
-aiMsg += chunk;
-
-setConversation(prev => {
-  const updated = [...prev];
-  updated[updated.length - 1] = {
-    role: 'ai',
-    message: (updated[updated.length - 1]?.message || '') + chunk
-  };
-  return updated;
-});
-
-
-      // Trigger TTS asynchronously (in the background) so it doesn't block the text chat
-      const playAudio = async () => {
-        try {
-          const ttsResponse = await fetch(`${API_BASE_URL}/openai_tts`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: aiMsg })
-          });
-
-          if (!ttsResponse.body) {
-            console.error("No audio stream from OpenAI.");
-          } else {
-            // Stream the audio from OpenAI as it arrives
-            const audioStream = ttsResponse.body;
-            playTTS(audioStream);  // Play the audio stream in real-time
-          }
-        } catch (error) {
-          console.error("Error during TTS streaming:", error);
-        }
-      };
-
-      // Call the async function for TTS without waiting for it
-      playAudio();
-
+      if (value) chunks.push(value);
     }
 
-    // Call /partial-eval asynchronously only **once** after the entire response
+    const blob = new Blob(chunks, { type: "audio/mpeg" });
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    ttsAudioBufferQueue.push(audioBuffer);
+    maybePlayNextSentence(); // Trigger if idle
+  } catch (err) {
+    console.error("❌ Error preloading TTS:", err);
+  }
+};
+
+
+// Function to process next item in queue
+const maybePlayNextSentence = () => {
+  if (isPlaying || ttsAudioBufferQueue.length === 0) return;
+
+  isPlaying = true;
+  const buffer = ttsAudioBufferQueue.shift()!;
+  const source = audioContext.createBufferSource();
+
+  source.buffer = buffer;
+  source.connect(audioContext.destination);
+  source.start();
+
+  source.onended = () => {
+    isPlaying = false;
+    maybePlayNextSentence();
+  };
+};
+
+  // 5. Sending messages to your AI
+  // Updated handleSendMessage function: Maintain existing behavior + speak full message after stream
+  const handleSendMessage = async (
+    e: React.FormEvent | React.KeyboardEvent,
+    transcriptOverride?: string
+  ) => {  
+    e.preventDefault();
+    if (!sessionId || (!inputMessage.trim() && !transcriptOverride)) {
+      console.error("Missing session_id or empty input.");
+      return;
+    }
+  
+    const userMsg = transcriptOverride || inputMessage;
+    setInputMessage('');
+  
+    setConversation(prev => [
+      ...prev,
+      { role: 'user', message: userMsg },
+      { role: 'ai', message: '' }
+    ]);
+  
     try {
-      const evalResponse = await fetch(`${API_BASE_URL}/partial-eval`, {
+      const response = await fetch(`${API_BASE_URL}/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: sessionId,
           user_input: userMsg,
-          ai_response: aiMsg
+          new_code_written: code
         })
       });
-
-      if (!evalResponse.ok) {
-        console.error("Error during partial evaluation.");
-      } else {
-        const evalData = await evalResponse.json();
-        console.log("Partial evaluation result:", evalData.partial_evaluation);
+  
+      if (!response.body) {
+        console.error("No response stream");
+        throw new Error("Stream failed");
       }
+  
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+  
+      let aiMsg = '';
+      let buffer = '';
+  
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+      
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk;
+      
+        const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/;
+        let match;
+        while ((match = ttsPattern.exec(buffer)) !== null) {
+          const sentence = match[1].trim();
+          if (sentence && sentence !== lastQueuedSentence) {
+            lastQueuedSentence = sentence;
+            preloadSentenceAudio(sentence); // preloads + queues decoded audio buffer
+          }
+          
+          // Remove matched TTS tag from buffer
+          buffer = buffer.slice(match.index + match[0].length);
+        }
+      
+        aiMsg += buffer;
+        setConversation(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: 'ai', message: aiMsg };
+          return updated;
+        });
+      
+        buffer = ''; // Clear after processing
+      }
+  
+      // No need to fetch TTS again — handled progressively
+  
+      // Optionally do partial eval
+      try {
+        const evalResponse = await fetch(`${API_BASE_URL}/partial-eval`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            user_input: userMsg,
+            ai_response: aiMsg
+          })
+        });
+  
+        if (!evalResponse.ok) {
+          console.error("Error during partial evaluation.");
+        } else {
+          const evalData = await evalResponse.json();
+          console.log("Partial evaluation result:", evalData.partial_evaluation);
+        }
+      } catch (error) {
+        console.error("Error calling /partial-eval:", error);
+      }
+  
     } catch (error) {
-      console.error("Error calling /partial-eval:", error);
+      console.error('❌ Streaming error:', error);
+      setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
     }
+  };
+  
 
-  } catch (error) {
-    console.error('❌ Streaming error:', error);
-    setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
+const toggleRecording = async () => {
+  if (isRecording) {
+    // 🟥 Stop recording
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+    return;
+  }
+
+  // 🎙 Start recording
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    audioChunksRef.current = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        audioChunksRef.current.push(e.data);
+      }
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "input.webm");
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/transcribe`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        const transcript = data.transcript;
+
+        if (!transcript) {
+          console.error("❌ Transcription failed:", data.error);
+          return;
+        }
+
+        await handleSendMessage({ preventDefault: () => {} } as React.FormEvent, transcript);
+      } catch (err) {
+        console.error("❌ Error sending audio:", err);
+      }
+    };
+
+    mediaRecorderRef.current = mediaRecorder;
+    mediaRecorder.start();
+    setIsRecording(true);
+  } catch (err) {
+    console.error("🎙 Audio permission error:", err);
   }
 };
+
 
 
 
@@ -340,6 +475,15 @@ setConversation(prev => {
               />
               <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                 <Send size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={toggleRecording}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'
+                }`}
+              >
+                {isRecording ? '🛑 Stop' : '🎤 Speak'}
               </button>
             </form>
           </div>

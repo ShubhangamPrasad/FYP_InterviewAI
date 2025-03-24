@@ -3,16 +3,21 @@ import json
 import pymysql
 from tqdm import tqdm  # Progress bar
 
-# MySQL Connection Details
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASSWORD = "Shubham2340"  # Replace with your actual MySQL password
+# ✅ MySQL Connection Details (Azure)
+DB_HOST = "aiviewmysql.mysql.database.azure.com"
+DB_USER = "aiview"
+DB_PASSWORD = "#PRASAD SHUBHANGAM RAJESH#123"
 DB_NAME = "ai_interview"
+
+# ✅ Optional SSL Settings for Azure (pymysql ignores ssl_disabled=False)
+# You can enable this if Azure enforces it, but it's not always required for pymysql.
+# If needed, use:
+# ssl = {"ssl": {"ssl_disabled": False}}
 
 # Directory containing JSON files
 JSON_DIR = "leetcode/Cleaned_LeetCode_Questions/"
 
-# Connect to MySQL
+# ✅ Connect to Azure MySQL using pymysql
 connection = pymysql.connect(
     host=DB_HOST,
     user=DB_USER,
