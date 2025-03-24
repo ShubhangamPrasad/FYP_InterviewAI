@@ -3,11 +3,11 @@ from openai import AzureOpenAI
 from typing import TypedDict, Annotated, Dict, List
 from pydantic import BaseModel
 from typing import List
-
+import os
 # Initialize Azure OpenAI client
-endpoint = "https://aiview-azureopenai.openai.azure.com"
-key = "EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe"
-SECRET_KEY = "1bbb57f43e1e5e3c751bfeaba059283e32b936d8b633f43daf042abe16e3e370209fd68f744e7b390514e4e6ed93e709e4eb19e2f78d1052a09d0baf32482ddc"
+endpoint = os.getenv("OPENAI_ENDPOINT")
+key = os.getenv("OPENAI_SECRETKEY")
+SECRET_KEY = os.getenv("PWD_SECRET_KEY")
 
 # Initialize Azure OpenAI client
 client = AzureOpenAI(

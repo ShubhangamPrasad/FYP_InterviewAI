@@ -4,8 +4,8 @@ from tqdm import tqdm
 import json
 
 # Azure OpenAI Credentials
-endpoint = "https://aiview-azureopenai.openai.azure.com"
-key = "EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe"
+endpoint = os.getenv("OPENAI_ENDPOINT")
+key = os.getenv("OPENAI_SECRETKEY")
 
 # Initialize Azure OpenAI client
 client = AzureOpenAI(

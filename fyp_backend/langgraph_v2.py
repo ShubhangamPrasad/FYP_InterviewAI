@@ -30,7 +30,9 @@ from azure.cognitiveservices.speech.audio import AudioOutputStream
 import tempfile
 import io
 import re
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = Flask(__name__)
 # Apply CORS with the correct origin and credentials support:
@@ -48,9 +50,9 @@ def apply_cors(response):
     return response
 
 # Initialize Azure OpenAI client
-endpoint = "https://aiview-azureopenai.openai.azure.com"
-key = "EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe"
-SECRET_KEY = "1bbb57f43e1e5e3c751bfeaba059283e32b936d8b633f43daf042abe16e3e370209fd68f744e7b390514e4e6ed93e709e4eb19e2f78d1052a09d0baf32482ddc"
+endpoint = os.getenv("OPENAI_ENDPOINT")
+key = os.getenv("OPENAI_SECRETKEY")
+SECRET_KEY = os.getenv("PWD_SECRET_KEY")
 
 class State(TypedDict):
     input: Annotated[List[dict], operator.add]  # Stores previous discussions as list of JSON objects
@@ -70,19 +72,19 @@ client = AzureOpenAI(
 # Initialize Azure OpenAI client for TTS
 tts_hd_client = AzureOpenAI(
     api_version="2024-05-01-preview",
-    api_key="9V14rjXQyvhKQX8SXDCxaVD5hYhxIh3Alj6uWptcjVWWLRpQmA2MJQQJ99BAACfhMk5XJ3w3AAAAACOGp0EO",
-    azure_endpoint="https://shubh-m6c24v3y-swedencentral.cognitiveservices.azure.com/"
+    api_key=os.getenv("TTS_API_KEY"),
+    azure_endpoint=os.getenv("TTS_AZURE_ENDPOINT")
 )
 
 realtime_client = AzureOpenAI(
-    api_key="EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe",
-    azure_endpoint="https://aiview-azureopenai.openai.azure.com",
+    api_key=os.getenv("OPENAI_SECRETKEY"),
+    azure_endpoint= os.getenv("OPENAI_ENDPOINT"),
     api_version="2024-10-01-preview"
 )
 
 whisper_client = AzureOpenAI(
-    api_key="EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe",
-    azure_endpoint="https://aiview-azureopenai.openai.azure.com",
+    api_key=os.getenv("OPENAI_SECRETKEY"),
+    azure_endpoint= os.getenv("OPENAI_ENDPOINT"),
     api_version="2024-06-01"
 )
 # __________________________ DEFINING NODES __________________________
@@ -815,8 +817,8 @@ def user_history():
 @app.route('/elevenlabs_tts', methods=['POST', 'OPTIONS'])
 def elevenlabs_tts():
     """Handles ElevenLabs TTS with proper CORS support."""
-    ELEVENLABS_API_KEY = "sk_d10cf7e8636df4b40346285c66e0581c329c77f31d993c43"
-    ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # e.g. Rachel
+    ELEVENLABS_API_KEY = os.env("ELEVENLABS_API_KEY")
+    ELEVENLABS_VOICE_ID = os.env("ELEVENLABS_VOICE_ID")
     if request.method == "OPTIONS":
         response = jsonify({"message": "CORS Preflight OK"})
         response.status_code = 204  # ✅ Respond correctly to preflight
@@ -1011,7 +1013,7 @@ def transcribe_audio():
 @app.route("/azure_tts", methods=["POST", "OPTIONS"])
 def azure_tts():
     """Generate speech using Azure Speech SDK and stream back MP3."""
-    AZURE_TTS_KEY = "7vFftkUPiOXwiHeM3JK4BGBSPnd8KhLWMj9SF5rZ1RkSqhdcYL04JQQJ99BCACYeBjFXJ3w3AAAYACOGlLwd"
+    AZURE_TTS_KEY = os.env("AZURE_SPEECH_TTS_KEY")
     AZURE_TTS_REGION = "eastus"
 
     if request.method == "OPTIONS":

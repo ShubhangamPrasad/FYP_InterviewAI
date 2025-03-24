@@ -3,6 +3,7 @@ import random
 from openai import AzureOpenAI
 import bcrypt
 import json
+import os
 
 # MySQL Database Configuration
 DB_CONFIG = {
@@ -123,8 +124,8 @@ def get_user_feedback_history(user_id: str):
 # write a genaAI fucntion that will help summarise each question into less than 5 words to be used as a title for the question
 # the function will take in the question and return a summary of the question
 
-endpoint = "https://aiview-azureopenai.openai.azure.com"
-key = "EGyCt6tCmsRzncdBPLYHV5Mqzxvb87e7DbloT6fVvtxVjYXDNz6IJQQJ99BAACHYHv6XJ3w3AAABACOGlGqe"
+endpoint = os.getenv("OPENAI_ENDPOINT")
+key = os.getenv("OPENAI_SECRETKEY")
 
 # Initialize Azure OpenAI client
 client = AzureOpenAI(
