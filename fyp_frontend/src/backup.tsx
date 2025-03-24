@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Send, MessageSquare, HelpCircle, Code2 } from 'lucide-react';
 
-const API_BASE_URL = 'http://127.0.0.1:5001'; // Change if backend is hosted elsewhere
+const API_BASE_URL = 'https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net'; // Change if backend is hosted elsewhere
 
 const App: React.FC = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);

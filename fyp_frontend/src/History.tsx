@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_BASE_URL = "http://127.0.0.1:5001";
+const API_BASE_URL = "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net";
 
 interface FeedbackEntry {
   question_id: string;

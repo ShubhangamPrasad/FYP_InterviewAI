@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5001/check-auth", {
+        const response = await fetch("https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net/check-auth", {
           method: "GET",
           credentials: "include",
         });

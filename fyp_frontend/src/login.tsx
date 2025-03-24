@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://127.0.0.1:5001"; // Adjust if needed
+const API_BASE_URL = "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net"; // Adjust if needed
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");

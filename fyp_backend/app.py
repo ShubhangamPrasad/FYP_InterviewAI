@@ -1,3 +1,5 @@
+print("🔥 Azure ran THIS file")
+
 import os
 import json
 import time
@@ -36,8 +38,6 @@ from google.cloud import texttospeech
 app = Flask(__name__)
 # Apply CORS with the correct origin and credentials support:
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5173"}}, supports_credentials=True)
-
-print("🔥 Azure ran THIS file")
 
 # ✅ Handle CORS for all requests
 @app.after_request
@@ -942,49 +942,49 @@ def gpt4o_realtime_tts():
         print(f"Error during GPT-4o realtime TTS generation: {e}")
         return apply_cors(Response("Internal server error during TTS generation.", status=500, mimetype='text/plain'))
 
-google_tts_client = texttospeech.TextToSpeechClient()
-@app.route("/google_tts", methods=["POST", "OPTIONS"])
-def google_tts():
-    """Generate speech using Google Cloud Text-to-Speech API."""
-    if request.method == "OPTIONS":
-        response = jsonify({"message": "CORS Preflight OK"})
-        response.status_code = 204
-        return apply_cors(response)
+# google_tts_client = texttospeech.TextToSpeechClient()
+# @app.route("/google_tts", methods=["POST", "OPTIONS"])
+# def google_tts():
+#     """Generate speech using Google Cloud Text-to-Speech API."""
+#     if request.method == "OPTIONS":
+#         response = jsonify({"message": "CORS Preflight OK"})
+#         response.status_code = 204
+#         return apply_cors(response)
 
 
-    data = request.get_json()
-    text = data.get("text", "")
-    if not text:
-        return apply_cors(jsonify({"error": "No text provided"}), 400)
+#     data = request.get_json()
+#     text = data.get("text", "")
+#     if not text:
+#         return apply_cors(jsonify({"error": "No text provided"}), 400)
 
-    try:
-        synthesis_input = texttospeech.SynthesisInput(text=text)
+#     try:
+#         synthesis_input = texttospeech.SynthesisInput(text=text)
 
-        voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US",
-            name="en-US-Chirp3-HD-Orus",
-            ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-        )
+#         voice = texttospeech.VoiceSelectionParams(
+#             language_code="en-US",
+#             name="en-US-Chirp3-HD-Orus",
+#             ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+#         )
 
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3
-        )
+#         audio_config = texttospeech.AudioConfig(
+#             audio_encoding=texttospeech.AudioEncoding.MP3
+#         )
 
-        response = google_tts_client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice,
-            audio_config=audio_config
-        )
+#         response = google_tts_client.synthesize_speech(
+#             input=synthesis_input,
+#             voice=voice,
+#             audio_config=audio_config
+#         )
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as out:
-            out.write(response.audio_content)
-            temp_path = out.name
+#         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as out:
+#             out.write(response.audio_content)
+#             temp_path = out.name
 
-        return apply_cors(send_file(temp_path, mimetype="audio/mpeg"))
+#         return apply_cors(send_file(temp_path, mimetype="audio/mpeg"))
 
-    except Exception as e:
-        print(f"❌ Google TTS Error: {e}")
-        return apply_cors(Response("Internal server error during Google TTS.", status=500, mimetype="text/plain"))
+#     except Exception as e:
+#         print(f"❌ Google TTS Error: {e}")
+#         return apply_cors(Response("Internal server error during Google TTS.", status=500, mimetype="text/plain"))
 
 @app.route('/transcribe', methods=['POST', 'OPTIONS'])
 def transcribe_audio():

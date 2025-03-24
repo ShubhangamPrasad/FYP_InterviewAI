@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_BASE_URL = "http://127.0.0.1:5001"; // Adjust if hosted elsewhere
+const API_BASE_URL = "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net"; // Adjust if hosted elsewhere
 
 const Profile: React.FC = () => {
   const [feedback, setFeedback] = useState<any | null>(null);
