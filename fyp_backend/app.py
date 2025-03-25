@@ -37,13 +37,13 @@ from google.cloud import texttospeech
 
 app = Flask(__name__)
 # Apply CORS with the correct origin and credentials support:
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5173"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net"}}, supports_credentials=True)
 
 # ✅ Handle CORS for all requests
 @app.after_request
 def apply_cors(response):
     """Ensure CORS headers are applied correctly."""
-    response.headers["Access-Control-Allow-Origin"] = "http://127.0.0.1:5173"  # ✅ Must be specific origin
+    response.headers["Access-Control-Allow-Origin"] = "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net"  # ✅ Must be specific origin
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     response.headers["Access-Control-Allow-Credentials"] = "true"  # ✅ Required when using `credentials: "include"

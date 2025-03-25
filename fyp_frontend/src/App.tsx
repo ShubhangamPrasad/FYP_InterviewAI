@@ -48,7 +48,7 @@ const AppContent: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await fetch("http://127.0.0.1:5001/logout", { method: "POST", credentials: "include" });
+    await fetch("https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net/logout", { method: "POST", credentials: "include" });
     window.dispatchEvent(new Event("authChange"));
     navigate("/login", { replace: true });
   };
