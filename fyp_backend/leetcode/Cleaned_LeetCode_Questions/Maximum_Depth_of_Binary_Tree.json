@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Maximum Depth Of Binary Tree",
     "leetcode_url": "https://leetcode.com/problems/Maximum-Depth-of-Binary-Tree/",
-    "difficulty": "Easy"
+    "difficulty": "Easy",
+    "starter_code": "\n    ```python\ndef maxDepth(root):\n    if root is None:\n        return 0\n    return 1 + max(maxDepth(root.left), maxDepth(root.right))\n```\n    \n    The algorithm is a simple recursive traversal of the binary tree. We start from the root, and for each node, we calculate the maximum depth of its left and right subtrees. We return the maximum of these two depths plus 1 (for the current node). If the node is null, we return a depth of 0 since this path doesn't exist. This way, we traverse all potential paths in the tree and return the longest one.\n    "
 }

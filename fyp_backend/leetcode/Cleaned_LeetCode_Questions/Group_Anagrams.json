@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Group Anagrams",
     "leetcode_url": "https://leetcode.com/problems/Group-Anagrams/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\nfrom collections import defaultdict\n\ndef group_anagrams(strs):\n    anagram_map = defaultdict(list)\n\n    for s in strs:\n        key = ''.join(sorted(s))\n        anagram_map[key].append(s)\n\n    return list(anagram_map.values())\n```\n    \n    The algorithm iterates through the input array of strings. For each string, create a sorted version of the string as key, and store the original strings as values. Use a data structure like a map or dictionary to store the grouped anagrams in these key-value pairs. The keys will represent the different anagrams, while the values will be lists of the original strings that fit the anagram. Finally, extract the values (lists of anagrams) from the map or dictionary and return them. This works because anagrams will produce the same sorted strings as keys.\n    "
 }

@@ -6,5 +6,6 @@
     "followup": "Can you design an algorithm with less than O(n^2) time complexity?",
     "title": "Two Sum",
     "leetcode_url": "https://leetcode.com/problems/Two-Sum/",
-    "difficulty": "Easy"
+    "difficulty": "Easy",
+    "starter_code": "\n    ```python\ndef twoSum(nums, target):\n    map = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in map:\n            return [map[complement], i]\n        map[num] = i\n    return []\n```\n    \n    The algorithm leverages a hash map (unordered_map in C++, HashMap in Java, dictionary in Python, and Map in JavaScript). It iterates through the given 'nums' array and calculates the complementary value (target - current value). If the complementary value is already in the hash map, it means that we found a solution, and we return those indices. If the complement is not in the hash map, we store the current element in the hash map with its index. If the algorithm doesn't find the solution, it returns an empty array or throws an exception (in Java).\n\nThis approach has a time complexity of O(n) and a space complexity of O(n) as well.\n    "
 }

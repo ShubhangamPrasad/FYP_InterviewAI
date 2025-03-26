@@ -6,5 +6,6 @@
     "followup": "",
     "title": "H-Index",
     "leetcode_url": "https://leetcode.com/problems/H-Index/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\ndef hIndex(citations: List[int]) -> int:\n    citations.sort(reverse=True)\n    h = 0\n    for i, citation in enumerate(citations):\n        if citation >= i + 1:\n            h = i + 1\n        else:\n            break\n    return h\n```\n    \n    1. First, we sort the citations array in descending order.\n2. Then, we iterate through the sorted array and compare each value with its index + 1 (zero-based index). If citations[i] is greater or equal to (i + 1), we update the h-index with the new value (i + 1). Otherwise, we break the loop since the maximum h-index is achieved.\n3. Finally, we return the h-index.\n    "
 }

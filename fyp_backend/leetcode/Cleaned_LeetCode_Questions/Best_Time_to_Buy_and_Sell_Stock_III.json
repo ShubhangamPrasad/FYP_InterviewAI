@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Best Time To Buy And Sell Stock Iii",
     "leetcode_url": "https://leetcode.com/problems/Best-Time-to-Buy-and-Sell-Stock-III/",
-    "difficulty": "Hard"
+    "difficulty": "Hard",
+    "starter_code": "\n    ```python\ndef maxProfit(prices):\n    buy1, buy2 = float(\"inf\"), float(\"inf\")\n    profit1, profit2 = 0, 0\n\n    for price in prices:\n        buy1 = min(buy1, price)\n        profit1 = max(profit1, price - buy1)\n        buy2 = min(buy2, price - profit1)\n        profit2 = max(profit2, price - buy2)\n\n    return profit2\n```\n    \n    1. Initialize variables buy1 and buy2 to track the minimum prices, and profit1 and profit2 to track the maximum profits.\n2. Iterate through prices array.\n3. Update buy1 to the minimum of buy1 and the current price.\n4. Update profit1 to the maximum of profit1 and the current price - buy1.\n5. Update buy2 to the minimum of buy2 and the current price - profit1.\n6. Update profit2 to the maximum of profit2 and the current price - buy2.\n7. Return profit2. This is the profit from two transactions.\n    "
 }

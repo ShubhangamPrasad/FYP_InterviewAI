@@ -25,17 +25,20 @@ for filename in tqdm(json_files, desc="Updating JSON Files", unit="file"):
     title = data.get("title", "").strip()
     formatted_title = title.replace(" ", "-").lower()  # Convert to slug format
 
-    # Match with Hugging Face dataset
-    difficulty_row = df[df["formatted_title"] == formatted_title]
+    # Match with Hugging Face dataset to get starter code from the "python" column
+    starter_code_row = df[df["formatted_title"] == formatted_title]
 
-    if not difficulty_row.empty:
-        difficulty = difficulty_row.iloc[0]["difficulty"]  # Extract difficulty level
-        data["difficulty"] = difficulty  # Add difficulty to JSON
+    if not starter_code_row.empty:
+        starter_code = starter_code_row.iloc[0].get("python")
+        if starter_code is not None:
+            data["starter_code"] = starter_code  # Add starter code to JSON
 
-        # Save the updated JSON file
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(data, file, indent=4)
+            # Save the updated JSON file
+            with open(file_path, "w", encoding="utf-8") as file:
+                json.dump(data, file, indent=4)
 
-        tqdm.write(f"✅ Updated {filename} with difficulty: {difficulty}")
+            tqdm.write(f"✅ Updated {filename} with starter code.")
+        else:
+            tqdm.write(f"❌ No starter code found in the 'python' column for: {title}")
     else:
-        tqdm.write(f"❌ No difficulty found for: {title}")
+        tqdm.write(f"❌ No matching record found for: {title}")

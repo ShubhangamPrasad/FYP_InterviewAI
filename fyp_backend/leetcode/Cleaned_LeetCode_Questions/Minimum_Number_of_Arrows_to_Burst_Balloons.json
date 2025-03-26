@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Minimum Number Of Arrows To Burst Balloons",
     "leetcode_url": "https://leetcode.com/problems/Minimum-Number-of-Arrows-to-Burst-Balloons/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\ndef findMinArrowShots(points):\n    if not points:\n        return 0\n    points.sort(key=lambda x: x[1])\n\n    arrows = 1\n    end = points[0][1]\n\n    for i in range(1, len(points)):\n        if points[i][0] > end:\n            arrows += 1\n            end = points[i][1]\n\n    return arrows\n```\n    \n    The algorithm sorts the given points by the end value of their ranges. Then, it initializes a variable `arrows` to 1 (to count the first arrow) and `end` to the end value of the first point (to keep track of the last point reached by arrows).\n\nThen, it iterates through the array, starting from the second point to the end. For each point, it checks whether the start value is greater than the current `end` value. If it is, that means this point is not covered by the previous arrows, so it increments the `arrows` counter and updates `end` to the end value of the current point.\n\nFinally, it returns the value of `arrows` as the minimum number of arrows needed to burst all balloons. \n    "
 }

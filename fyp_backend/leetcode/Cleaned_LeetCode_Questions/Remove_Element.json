@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Remove Element",
     "leetcode_url": "https://leetcode.com/problems/Remove-Element/",
-    "difficulty": "Easy"
+    "difficulty": "Easy",
+    "starter_code": "\n    ```python\ndef removeElement(nums, val):\n    i = 0\n    for j in range(len(nums)):\n        if nums[j] != val:\n            nums[i] = nums[j]\n            i += 1\n    return i\n```\n    \n    The algorithm uses two pointers approach. The pointer `i` maintains the position where the next non-val element should be placed, and pointer `j` iterates through the array. If the element at `j` is not equal to `val`, we place it at the position `i` and increment the `i` pointer. The loop continues until we have checked all the elements in the array. The `i` pointer will give us the count of elements that are not equal to `val`, which is the result. Thus, we return the value of `i` as the final result.\n\nThe time complexity of this algorithm is O(n), where n is the number of elements in the array, as we only iterate through the array once. The space complexity is O(1) since we do not use any extra memory. We modify the input array in-place.\n    "
 }

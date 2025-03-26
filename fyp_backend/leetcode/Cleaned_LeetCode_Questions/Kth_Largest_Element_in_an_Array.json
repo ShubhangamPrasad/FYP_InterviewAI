@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Kth Largest Element In An Array",
     "leetcode_url": "https://leetcode.com/problems/Kth-Largest-Element-in-an-Array/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\ndef findKthLargest(nums: List[int], k: int) -> int:\n    nums.sort(reverse=True)\n    return nums[k-1]\n```\n    \n    The algorithm sorts the input array in descending order (non-increasing order). Then it returns the element at the index `k-1`. In the case of the C++ and Python implementations, the built-in `sort()` method was used to sort the array in descending order, while in the Java implementation, a min-heap was used for efficiency. In the Javascript implementation, the custom comparator `(a, b) => b - a` was used to sort the input array in descending order.\n\nSorting the array in descending order ensures that the kth largest element will be located at the index `k-1` (since indexing starts at 0).\n    "
 }

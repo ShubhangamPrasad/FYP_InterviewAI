@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Jump Game Ii",
     "leetcode_url": "https://leetcode.com/problems/Jump-Game-II/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\ndef jump(nums):\n    jumps = 0\n    current_end = 0\n    current_farthest = 0\n\n    for i in range(len(nums) - 1):\n        current_farthest = max(current_farthest, i + nums[i])\n        if i == current_end:\n            jumps += 1\n            current_end = current_farthest\n\n    return jumps\n```\n    \n    We initialize jumps to count the number of jumps, current_end to keep track of the farthest index we can reach with the current number of jumps, and current_farthest to keep track of the farthest index that can be reached from the current position.\n\nWe loop through the array up to the second last element. For each index, we calculate and store the farthest index that can be reached from the current index. If the current index equals the current end, we increment the jumps, as we need one more jump to reach or go beyond the current end, and update the current_end with the current_farthest value.\n\nFinally, we return the number of jumps which represents the minimum number of jumps needed to reach the last index.\n    "
 }

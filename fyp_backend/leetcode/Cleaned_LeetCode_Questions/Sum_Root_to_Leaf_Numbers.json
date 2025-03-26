@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Sum Root To Leaf Numbers",
     "leetcode_url": "https://leetcode.com/problems/Sum-Root-to-Leaf-Numbers/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\ndef sumNumbers(root, cur=0):\n    if root is None: return 0\n    cur = cur * 10 + root.val\n    if root.left is None and root.right is None: return cur\n    return sumNumbers(root.left, cur) + sumNumbers(root.right, cur)\n```\n\n    \n    The algorithm is a depth-first search (DFS) algorithm that traverses the binary tree. The function is called recursively with the current node and the sum of the numbers traversed till that node. At the beginning, the sum is initialized to zero.\n\nIf the root is null, it means we have reached the end of a path, so we return 0.\n\nWe update the current sum by multiplying it with 10 and adding the value of the current root to it. If the current node is a leaf node (both left and right are null), we return the current sum.\n\nFinally, the result is a sum of the values returned from the left and right subtrees. Since we use the same code for all languages, the only difference lies in the syntax and how the null values are handled. \n    "
 }

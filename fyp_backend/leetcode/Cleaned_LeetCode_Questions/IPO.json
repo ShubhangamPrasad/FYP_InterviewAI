@@ -6,5 +6,6 @@
     "followup": "How can this approach be optimized for larger constraints?",
     "title": "Ipo",
     "leetcode_url": "https://leetcode.com/problems/IPO/",
-    "difficulty": "Hard"
+    "difficulty": "Hard",
+    "starter_code": "\n    ```python\nimport heapq\n\ndef findMaximizedCapital(k: int, w: int, profits, capital) -> int:\n    project_pool = list(zip(capital, profits))\n    project_pool.sort(reverse=True)\n    \n    profit_pool = []\n    \n    while k:\n        while project_pool and project_pool[-1][0] <= w:\n            heapq.heappush(profit_pool, -project_pool.pop()[1])\n        \n        if not profit_pool:\n            break\n        \n        w -= heapq.heappop(profit_pool)\n        k -= 1\n        \n    return w\n```\n    \n    1. Create an array of project pool, where each element is a pair of (capital, profit).\n2. Sort the project pool array by capital in ascending order.\n3. Initialize a priority queue called profit pool to store the profits of projects based on which one has the highest profit.\n4. Iterate through projects up to k times.\n5. In each iteration, check projects with capitals less than or equal to w in the project pool, push their profits into the profit pool and remove them from the project pool.\n6. If there is any profit in the profit pool, pop the one with the highest profit and add the profit to w.\n7. Return the final maximized capital w after finishing at most k distinct projects.\n    "
 }

@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Rotate Image",
     "leetcode_url": "https://leetcode.com/problems/Rotate-Image/",
-    "difficulty": "Medium"
+    "difficulty": "Medium",
+    "starter_code": "\n    ```python\ndef rotate(matrix):\n    n = len(matrix)\n    for i in range(n // 2):\n        for j in range(i, n - i - 1):\n            temp = matrix[i][j]\n            matrix[i][j] = matrix[n - j - 1][i]\n            matrix[n - j - 1][i] = matrix[n - i - 1][n - j - 1]\n            matrix[n - i - 1][n - j - 1] = matrix[j][n - i - 1]\n            matrix[j][n - i - 1] = temp\n```\n    \n    The algorithm iterates over each layer of the matrix gradually working inwards. For each element in the current layer, it performs a 4-way swap (moving elements from left -> top, bottom -> left, right -> bottom, and top -> right). This moves each element in the layer to its new position after rotation without using any additional memory. The algorithm proceeds with this strategy until it reaches the center of the matrix, ensuring that all elements are correctly rotated.\n    "
 }

@@ -6,5 +6,6 @@
     "followup": "",
     "title": "Isomorphic Strings",
     "leetcode_url": "https://leetcode.com/problems/Isomorphic-Strings/",
-    "difficulty": "Easy"
+    "difficulty": "Easy",
+    "starter_code": "\n    ```python\ndef is_isomorphic(s: str, t: str) -> bool:\n    map1, map2 = {}, {}\n    for char_s, char_t in zip(s, t):\n        if char_s not in map1:\n            map1[char_s] = char_t\n        if char_t not in map2:\n            map2[char_t] = char_s\n        if map1[char_s] != char_t or map2[char_t] != char_s:\n            return False\n    return True\n```\n    \n    - Create two maps (or hash_maps) to store the mappings for characters in `s` to `t` and characters in `t` to `s`.\n- Iterate through the characters of `s` and `t`.\n- If the current character of `s` is not a key in the first map, add it with the corresponding character of `t` as the value.\n- If the current character of `t` is not a key in the second map, add it with the corresponding character of `s` as the value.\n- If the maps have inconsistent mappings, return false (they are not isomorphic).\n- If the loop is over without finding inconsistent mappings, return true (the strings are isomorphic).\n    "
 }

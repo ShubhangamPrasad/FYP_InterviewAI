@@ -48,9 +48,23 @@ const AppContent: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await fetch("https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net/logout", { method: "POST", credentials: "include" });
-    window.dispatchEvent(new Event("authChange"));
-    navigate("/login", { replace: true });
+    try {
+      const response = await fetch("https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (response.ok) {
+        // Explicitly update the authentication state
+        setIsAuthenticated(false);
+        // Optionally, dispatch an authChange event if other parts of your app rely on it
+        window.dispatchEvent(new Event("authChange"));
+        navigate("/login", { replace: true });
+      } else {
+        console.error("Logout failed:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   if (!hasCheckedAuth) {
@@ -88,7 +102,7 @@ const AppContent: React.FC = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/questions" element={isAuthenticated ? <Landing /> : <Navigate to="/login" />} />
         <Route path="/interview/:questionId" element={isAuthenticated ? <Interview /> : <Navigate to="/login" />} />
-        <Route path="/history" element={isAuthenticated ? <History /> : <Navigate to="/login" />} /> {/* ✅ Updated route */}
+        <Route path="/history" element={isAuthenticated ? <History /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
