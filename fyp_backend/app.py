@@ -667,11 +667,13 @@ def logout():
     response = jsonify({"message": "Logout successful"})
     response.set_cookie(
         "auth_token", 
-        "",  # ✅ Clears the cookie
-        expires=0,  # ✅ Ensures the cookie is immediately expired
+        "",  # Clear the cookie value
+        expires=0,  # Immediately expire the cookie
         httponly=True, 
-        secure=True,  # ✅ Keep this True for HTTPS, set to False for local testing
-        samesite="Strict"
+        secure=True,  # Keep True for HTTPS, False for local testing if needed
+        samesite="Strict",
+        domain="fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net",  # Use the same domain as when the cookie was set
+        path="/"  # Ensure the path matches
     )
     return apply_cors(response)
 
