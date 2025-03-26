@@ -353,7 +353,6 @@ const maybePlayNextSentence = () => {
       ]);
     }
   };
-  
 
 const toggleRecording = async () => {
   if (isRecording) {
