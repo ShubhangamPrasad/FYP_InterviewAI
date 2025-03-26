@@ -73,10 +73,12 @@ const App: React.FC = () => {
   const audioChunksRef = useRef<Blob[]>([]);
 
 
-
-  // 1. Fetch question and init session
   useEffect(() => {
     handleStartTimer();
+  }, []);
+  
+  // 1. Fetch question and init session
+  useEffect(() => {
     if (!questionId) return;
 
     const startInterview = async () => {
