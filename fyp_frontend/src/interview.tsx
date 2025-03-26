@@ -33,7 +33,6 @@ const playTTS = async (audioStream: ReadableStream) => {
   }
 };
 
-
 const App: React.FC = () => {
   const { questionId } = useParams();
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -66,12 +65,10 @@ const App: React.FC = () => {
   const ttsAudioBufferQueue: AudioBuffer[] = [];
   let lastQueuedSentence = '';
   const audioContext = new AudioContext();
-  
 
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-
 
   useEffect(() => {
     handleStartTimer();
@@ -158,7 +155,7 @@ const App: React.FC = () => {
       if (!userData.email) throw new Error("User email not found");
       const email = userData.email;
   
-      // Store for profile page
+      // Store for history page
       sessionStorage.setItem("question_id", questionId.toString());
   
       const response = await fetch(`${API_BASE_URL}/final_evaluation`, {
@@ -166,7 +163,7 @@ const App: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           session_id: sessionId,
-          student_id: email,  // ✅ use actual email
+          student_id: email,
           question_id: questionId
         }),
       });
@@ -176,10 +173,10 @@ const App: React.FC = () => {
       const data = await response.json();
       console.log("✅ Final evaluation result:", data.final_evaluation);
   
-      // Store final feedback in sessionStorage for Profile.tsx to read
+      // Store final feedback for the History page to read
       sessionStorage.setItem("final_feedback", JSON.stringify(data.final_evaluation));
   
-      setFinalEvaluation(data.final_evaluation);  // (optional local use)
+      setFinalEvaluation(data.final_evaluation);
       return true;
     } catch (err) {
       console.error("❌ Error calling final evaluation:", err);
@@ -187,10 +184,12 @@ const App: React.FC = () => {
     }
   };
   
+  // Updated to redirect automatically to /History
   const handleFeedbackClick = async () => {
+    setIsRedirecting(true);
     const success = await performFinalEvaluation();
     if (success) {
-      window.location.assign("/profile");
+      window.location.assign("/History");
     }
   };
 
@@ -251,7 +250,6 @@ const preloadSentenceAudio = async (sentence: string) => {
   }
 };
 
-
 // Function to process next item in queue
 const maybePlayNextSentence = () => {
   if (isPlaying || ttsAudioBufferQueue.length === 0) return;
@@ -273,7 +271,6 @@ const maybePlayNextSentence = () => {
     maybePlayNextSentence();
   };
 };
-
 
   // 5. Sending messages to your AI
   // Updated handleSendMessage function: Maintain existing behavior + speak full message after stream
@@ -368,8 +365,6 @@ const maybePlayNextSentence = () => {
     }
   };
   
-  
-
 const toggleRecording = async () => {
   if (isRecording) {
     // 🟥 Stop recording
@@ -422,9 +417,6 @@ const toggleRecording = async () => {
     console.error("🎙 Audio permission error:", err);
   }
 };
-
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
