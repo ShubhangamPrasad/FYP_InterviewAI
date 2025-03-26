@@ -1001,7 +1001,7 @@ def transcribe_audio():
         result = whisper_client.audio.transcriptions.create(
             model="whisper",
             file=("audio.webm", audio_bytes),
-            language="en-US"
+            language="en"
         )
         print("✅ Whisper transcription result:", result.text)
 
@@ -1037,7 +1037,7 @@ def azure_tts():
 
     try:
         speech_config = speechsdk.SpeechConfig(subscription=os.getenv("AZURE_SPEECH_TTS_KEY"), region=AZURE_TTS_REGION)
-        speech_config.speech_synthesis_voice_name = "en-US-AriaNeural"
+        speech_config.speech_synthesis_voice_name = "en-US-AvaMultilingualNeural"
         speech_config.set_speech_synthesis_output_format(
             speechsdk.SpeechSynthesisOutputFormat.Audio16Khz128KBitRateMonoMp3
         )
