@@ -6,12 +6,12 @@ import datetime
 import bcrypt  # For secure password hashing
 
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "Shubham2340",  # Replace with your MySQL password
-    "database": "ai_interview"
+    "host": "aiviewmysql.mysql.database.azure.com",
+    "user": "aiview",
+    "password": "#PRASAD SHUBHANGAM RAJESH#123",
+    "database": "ai_interview",
+    "ssl_disabled": False  # 👈 Required for Azure
 }
-
 
 def create_user(name, email, password):
     """Store new user in database with hashed password."""

@@ -287,6 +287,7 @@ const maybePlayNextSentence = () => {
     const userMsg = transcriptOverride || inputMessage;
     setInputMessage('');
   
+    // Add user message + placeholder AI message
     setConversation(prev => [
       ...prev,
       { role: 'user', message: userMsg },
@@ -312,8 +313,8 @@ const maybePlayNextSentence = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
   
-      // Array to hold the sentences we want to display
-      const sentences: string[] = [];
+      const seenSentences = new Set<string>();
+      let currentSentence = '';
   
       while (true) {
         const { done, value } = await reader.read();
@@ -321,39 +322,27 @@ const maybePlayNextSentence = () => {
   
         const chunk = decoder.decode(value, { stream: true });
   
-        // Use regex to find all TTS markers in the current chunk
         const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
         let match;
         while ((match = ttsPattern.exec(chunk)) !== null) {
           const sentence = match[1].trim();
-          if (!sentence) continue;
+          if (!sentence || seenSentences.has(sentence)) continue;
   
-          // Check if we already have a sentence
-          if (sentences.length > 0) {
-            const lastSentence = sentences[sentences.length - 1];
-            if (sentence.startsWith(lastSentence) && sentence.length > lastSentence.length) {
-              // The new sentence is an extension of the last one: update it.
-              sentences[sentences.length - 1] = sentence;
-            } else if (sentence === lastSentence) {
-              // Exact duplicate: do nothing.
-            } else {
-              // It's a new sentence, so add it.
-              sentences.push(sentence);
-            }
-          } else {
-            // No sentence yet, push the first one.
-            sentences.push(sentence);
+          // Update only if it's an extended version
+          if (sentence.startsWith(currentSentence)) {
+            currentSentence = sentence;
+            seenSentences.add(sentence);
+  
+            // Update AI message
+            setConversation(prev => {
+              const updated = [...prev];
+              updated[updated.length - 1] = { role: 'ai', message: currentSentence };
+              return updated;
+            });
+  
+            // Preload TTS audio (optional)
+            preloadSentenceAudio(sentence);
           }
-  
-          // Preload TTS audio for this sentence
-          preloadSentenceAudio(sentence);
-  
-          // Update the chatbot text based on the sentences array.
-          setConversation(prev => {
-            const updated = [...prev];
-            updated[updated.length - 1] = { role: 'ai', message: sentences.join(' ') };
-            return updated;
-          });
         }
       }
     } catch (error) {
@@ -364,7 +353,6 @@ const maybePlayNextSentence = () => {
       ]);
     }
   };
-  
   
 
 const toggleRecording = async () => {
