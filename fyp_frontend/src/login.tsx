@@ -25,7 +25,8 @@ const Login: React.FC = () => {
         const data = await response.json();
         throw new Error(data.error || "Login failed");
       }
-  
+
+      setIsLoggedIn(true); // ✅ Set login state
       window.sessionStorage.setItem("justLoggedIn", "true"); // ✅ Set flag for redirect
       window.dispatchEvent(new Event("authChange"));
     } catch (err) {
