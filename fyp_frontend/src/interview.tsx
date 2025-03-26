@@ -313,54 +313,47 @@ const maybePlayNextSentence = () => {
       const decoder = new TextDecoder("utf-8");
   
       let aiMsg = '';
-      // Variables for buffering and avoiding duplicate TTS sentences:
-      let pendingBuffer = '';
-      let lastQueuedSentence = ''; // Reset per new message if needed
+      // To avoid queuing duplicate sentences
+      let lastQueuedSentence = '';
   
-      // Process the streaming response
-      const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, decoder: TextDecoder) => {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          // Append incoming chunk to pendingBuffer
-          pendingBuffer += decoder.decode(value, { stream: true });
-          
-          // Process complete sentences between [TTS_START] and [TTS_END]
-          const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
-          let match;
-          let lastIndex = 0;
-          while ((match = ttsPattern.exec(pendingBuffer)) !== null) {
-            const sentence = match[1].trim();
-            if (sentence && sentence !== lastQueuedSentence) {
-              lastQueuedSentence = sentence;
-              preloadSentenceAudio(sentence);
-            }
-            lastIndex = ttsPattern.lastIndex;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+  
+        // Decode the current chunk
+        const chunk = decoder.decode(value, { stream: true });
+  
+        // Process TTS markers in this chunk
+        const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
+        let match;
+        while ((match = ttsPattern.exec(chunk)) !== null) {
+          const sentence = match[1].trim();
+          if (sentence && sentence !== lastQueuedSentence) {
+            lastQueuedSentence = sentence;
+            preloadSentenceAudio(sentence);
           }
-          // Remove processed portion
-          pendingBuffer = pendingBuffer.slice(lastIndex);
-          
-          // Optionally update conversation text with any remaining text
-          aiMsg += pendingBuffer; 
-          setConversation(prev => {
-            const updated = [...prev];
-            updated[updated.length - 1] = { role: 'ai', message: aiMsg };
-            return updated;
-          });
         }
-      };
   
-      // Call processStream to start processing the response stream.
-      await processStream(reader, decoder);
+        // Remove TTS markers and their content from the chunk for display
+        const cleanedChunk = chunk.replace(/\[TTS_START\].+?\[TTS_END\]/g, '');
+        
+        // Append only the cleaned text to aiMsg
+        aiMsg += cleanedChunk;
+        setConversation(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: 'ai', message: aiMsg };
+          return updated;
+        });
+      }
   
-      // Optionally, call your partial eval or any follow-up code here.
+      // Optionally, add any follow-up behavior (like partial evaluation)
   
     } catch (error) {
       console.error('❌ Streaming error:', error);
       setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
     }
   };
+  
 
 const toggleRecording = async () => {
   if (isRecording) {
