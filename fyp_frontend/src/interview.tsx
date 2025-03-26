@@ -254,10 +254,14 @@ const maybePlayNextSentence = () => {
   if (isPlaying || ttsAudioBufferQueue.length === 0) return;
 
   isPlaying = true;
-  const buffer = ttsAudioBufferQueue.shift()!;
+  const buffer = ttsAudioBufferQueue.shift();
+  if (!buffer) { // Guard against undefined
+    isPlaying = false;
+    return;
+  }
+  
   const source = audioContext.createBufferSource();
-
-  source.buffer = buffer;
+  source.buffer = buffer; // Now guaranteed to be AudioBuffer
   source.connect(audioContext.destination);
   source.start();
 
@@ -266,6 +270,7 @@ const maybePlayNextSentence = () => {
     maybePlayNextSentence();
   };
 };
+
 
   // 5. Sending messages to your AI
   // Updated handleSendMessage function: Maintain existing behavior + speak full message after stream
@@ -308,68 +313,54 @@ const maybePlayNextSentence = () => {
       const decoder = new TextDecoder("utf-8");
   
       let aiMsg = '';
-      let buffer = '';
+      // Variables for buffering and avoiding duplicate TTS sentences:
+      let pendingBuffer = '';
+      let lastQueuedSentence = ''; // Reset per new message if needed
   
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-      
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk;
-      
-        const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/;
-        let match;
-        while ((match = ttsPattern.exec(buffer)) !== null) {
-          const sentence = match[1].trim();
-          if (sentence && sentence !== lastQueuedSentence) {
-            lastQueuedSentence = sentence;
-            preloadSentenceAudio(sentence); // preloads + queues decoded audio buffer
-          }
+      // Process the streaming response
+      const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, decoder: TextDecoder) => {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
           
-          // Remove matched TTS tag from buffer
-          buffer = buffer.slice(match.index + match[0].length);
+          // Append incoming chunk to pendingBuffer
+          pendingBuffer += decoder.decode(value, { stream: true });
+          
+          // Process complete sentences between [TTS_START] and [TTS_END]
+          const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
+          let match;
+          let lastIndex = 0;
+          while ((match = ttsPattern.exec(pendingBuffer)) !== null) {
+            const sentence = match[1].trim();
+            if (sentence && sentence !== lastQueuedSentence) {
+              lastQueuedSentence = sentence;
+              preloadSentenceAudio(sentence);
+            }
+            lastIndex = ttsPattern.lastIndex;
+          }
+          // Remove processed portion
+          pendingBuffer = pendingBuffer.slice(lastIndex);
+          
+          // Optionally update conversation text with any remaining text
+          aiMsg += pendingBuffer; 
+          setConversation(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = { role: 'ai', message: aiMsg };
+            return updated;
+          });
         }
-      
-        aiMsg += buffer;
-        setConversation(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: 'ai', message: aiMsg };
-          return updated;
-        });
-      
-        buffer = ''; // Clear after processing
-      }
+      };
   
-      // No need to fetch TTS again — handled progressively
+      // Call processStream to start processing the response stream.
+      await processStream(reader, decoder);
   
-      // Optionally do partial eval
-      try {
-        const evalResponse = await fetch(`${API_BASE_URL}/partial-eval`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            session_id: sessionId,
-            user_input: userMsg,
-            ai_response: aiMsg
-          })
-        });
-  
-        if (!evalResponse.ok) {
-          console.error("Error during partial evaluation.");
-        } else {
-          const evalData = await evalResponse.json();
-          console.log("Partial evaluation result:", evalData.partial_evaluation);
-        }
-      } catch (error) {
-        console.error("Error calling /partial-eval:", error);
-      }
+      // Optionally, call your partial eval or any follow-up code here.
   
     } catch (error) {
       console.error('❌ Streaming error:', error);
       setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
     }
   };
-  
 
 const toggleRecording = async () => {
   if (isRecording) {
