@@ -49,15 +49,17 @@ const AppContent: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net/logout",
+        { method: "POST", credentials: "include" }
+      );
       if (response.ok) {
-        // Explicitly update the authentication state
+        // Update local auth state immediately
         setIsAuthenticated(false);
-        // Optionally, dispatch an authChange event if other parts of your app rely on it
-        window.dispatchEvent(new Event("authChange"));
+        // Remove any flag that might cause an immediate redirect
+        window.sessionStorage.removeItem("justLoggedIn");
+        // Optionally: Do not dispatch the "authChange" event if it triggers an unwanted re-check.
+        // window.dispatchEvent(new Event("authChange"));
         navigate("/login", { replace: true });
       } else {
         console.error("Logout failed:", response.statusText);
@@ -65,7 +67,7 @@ const AppContent: React.FC = () => {
     } catch (error) {
       console.error("Logout error:", error);
     }
-  };
+  };  
 
   if (!hasCheckedAuth) {
     return <div className="text-center p-10">Loading...</div>;
