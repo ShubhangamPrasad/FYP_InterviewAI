@@ -118,7 +118,7 @@ const App: React.FC = () => {
     if (timerActive) return; // Don’t start again if it’s already running
 
     // Set to 600 seconds => 10 minutes (using 10 seconds for quick testing)
-    setTimeLeft(600);
+    setTimeLeft(300);
     setTimerActive(true);
 
     timerRef.current = setInterval(() => {
