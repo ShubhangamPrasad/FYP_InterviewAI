@@ -76,6 +76,7 @@ const App: React.FC = () => {
 
   // 1. Fetch question and init session
   useEffect(() => {
+    handleStartTimer();
     if (!questionId) return;
 
     const startInterview = async () => {
