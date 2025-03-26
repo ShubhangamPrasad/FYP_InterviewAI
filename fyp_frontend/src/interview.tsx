@@ -38,7 +38,7 @@ const App: React.FC = () => {
   const { questionId } = useParams();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [code, setCode] = useState<string>(
-    `// Write your code here\nfunction example() {\n  // Start coding\n}`
+    `# Write your code here\Answer(): {\n  # Start coding\n}`
   );
   const [conversation, setConversation] = useState<{ role: string; message: string }[]>([
     { role: 'ai', message: 'How would you begin approaching this problem?' }

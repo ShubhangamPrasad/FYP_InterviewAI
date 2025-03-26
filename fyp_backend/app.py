@@ -37,13 +37,13 @@ from google.cloud import texttospeech
 
 app = Flask(__name__)
 # Apply CORS with the correct origin and credentials support:
-CORS(app, resources={r"/*": {"origins": "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "https://mango-bush-0c99ac700.6.azurestaticapps.net"}}, supports_credentials=True)
 
 # ✅ Handle CORS for all requests
 @app.after_request
 def apply_cors(response):
     """Ensure CORS headers are applied correctly."""
-    response.headers["Access-Control-Allow-Origin"] = "https://fypbackend-b5gchph9byc4b8gt.canadacentral-01.azurewebsites.net"  # ✅ Must be specific origin
+    response.headers["Access-Control-Allow-Origin"] = "https://mango-bush-0c99ac700.6.azurestaticapps.net"  # ✅ Must be specific origin
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     response.headers["Access-Control-Allow-Credentials"] = "true"  # ✅ Required when using `credentials: "include"
@@ -97,7 +97,7 @@ def node3(state: State) -> State:
 
         The input is: {input_data} 
 
-        Classify the user's response into one of the following categories:
+        Classi1 the user's response into one of the following categories:
         1 → User is lost, needs guidance
         2 → User asks question seeking guidance or clarification
         3 → User has given a response and you need to evaluate it
@@ -589,9 +589,9 @@ def login():
             "auth_token",
             token,
             httponly=True,
-            secure=False,  # ✅ Allow cookies over HTTP (only for testing)
-            samesite="Strict",
-            max_age=24 * 60
+            secure=True,  # ✅ Allow cookies over HTTP (only for testing)
+            samesite="None",
+            max_age=24 * 60 * 60
         )
         return apply_cors(response)
 
@@ -1000,7 +1000,8 @@ def transcribe_audio():
 
         result = whisper_client.audio.transcriptions.create(
             model="whisper",
-            file=("audio.webm", audio_bytes)
+            file=("audio.webm", audio_bytes),
+            language="en-US"
         )
         print("✅ Whisper transcription result:", result.text)
 
@@ -1013,7 +1014,7 @@ def transcribe_audio():
 
 @app.route('/test')
 def test():
-    return "It works on Azure!"
+    return "It works on Azura! " + os.getenv("AZURE_SPEECH_TTS_KEY")
 
 @app.route("/azure_tts", methods=["POST", "OPTIONS"])
 def azure_tts():
@@ -1035,17 +1036,21 @@ def azure_tts():
     print(f"🗣️ Azure TTS requested for sentence: {repr(text)}")
 
     try:
-        speech_config = speechsdk.SpeechConfig(subscription=AZURE_TTS_KEY, region=AZURE_TTS_REGION)
-        speech_config.speech_synthesis_voice_name = "en-US-LewisMultilingualNeural"
+        speech_config = speechsdk.SpeechConfig(subscription=os.getenv("AZURE_SPEECH_TTS_KEY"), region=AZURE_TTS_REGION)
+        speech_config.speech_synthesis_voice_name = "en-US-AriaNeural"
         speech_config.set_speech_synthesis_output_format(
-            speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
+            speechsdk.SpeechSynthesisOutputFormat.Audio16Khz128KBitRateMonoMp3
         )
 
         synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
         result = synthesizer.speak_text_async(text).get()
 
         if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
-            raise Exception(f"TTS failed: {result.reason}")
+            cancellation_details = speechsdk.CancellationDetails(result)
+            print("❌ Azure TTS CANCELED:")
+            print("Reason:", cancellation_details.reason)
+            print("ErrorDetails:", cancellation_details.error_details)
+            raise Exception(f"TTS failed: {cancellation_details.reason} - {cancellation_details.error_details}")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as out:
             out.write(result.audio_data)
@@ -1056,6 +1061,38 @@ def azure_tts():
     except Exception as e:
         print(f"❌ Azure TTS Error: {e}")
         return apply_cors(Response("Internal server error during Azure TTS.", status=500, mimetype="text/plain"))
+
+@app.route("/azure_tts_debug", methods=["POST"])
+def azure_tts_debug():
+    try:
+        AZURE_TTS_KEY = os.getenv("AZURE_SPEECH_TTS_KEY")
+        AZURE_TTS_REGION = os.getenv("AZURE_SPEECH_TTS_REGION", "eastus")
+
+        print("🔍 Using key:", AZURE_TTS_KEY[:5] + "..." if AZURE_TTS_KEY else "❌ MISSING")
+        print("🔍 Using region:", AZURE_TTS_REGION)
+
+        text = "Hello world"  # Short and safe
+        speech_config = speechsdk.SpeechConfig(subscription=AZURE_TTS_KEY, region=AZURE_TTS_REGION)
+        speech_config.speech_synthesis_voice_name = "en-US-AriaNeural"
+
+        synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
+        result = synthesizer.speak_text_async(text).get()
+
+        if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
+            details = speechsdk.CancellationDetails(result)
+            print("❌ Cancelled:", details.reason)
+            print("❌ Error details:", details.error_details)
+            return "TTS failed", 500
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as out:
+            out.write(result.audio_data)
+            path = out.name
+
+        return send_file(path, mimetype="audio/mpeg")
+
+    except Exception as e:
+        print("❌ Exception:", e)
+        return "Internal error", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
