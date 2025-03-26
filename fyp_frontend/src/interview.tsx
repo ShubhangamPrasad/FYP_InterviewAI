@@ -311,19 +311,15 @@ const maybePlayNextSentence = () => {
   
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
-  
-      let aiMsg = '';
-      // To avoid queuing duplicate sentences
       let lastQueuedSentence = '';
   
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
   
-        // Decode the current chunk
         const chunk = decoder.decode(value, { stream: true });
   
-        // Process TTS markers in this chunk
+        // Process TTS markers in the chunk
         const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
         let match;
         while ((match = ttsPattern.exec(chunk)) !== null) {
@@ -334,20 +330,16 @@ const maybePlayNextSentence = () => {
           }
         }
   
-        // Remove TTS markers and their content from the chunk for display
+        // Remove TTS markers and their content from the chunk
         const cleanedChunk = chunk.replace(/\[TTS_START\].+?\[TTS_END\]/g, '');
-        
-        // Append only the cleaned text to aiMsg
-        aiMsg += cleanedChunk;
+  
+        // Instead of appending, use the cleanedChunk directly
         setConversation(prev => {
           const updated = [...prev];
-          updated[updated.length - 1] = { role: 'ai', message: aiMsg };
+          updated[updated.length - 1] = { role: 'ai', message: cleanedChunk };
           return updated;
         });
       }
-  
-      // Optionally, add any follow-up behavior (like partial evaluation)
-  
     } catch (error) {
       console.error('❌ Streaming error:', error);
       setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
