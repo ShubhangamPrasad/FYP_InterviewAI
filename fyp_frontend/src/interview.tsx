@@ -277,7 +277,7 @@ const maybePlayNextSentence = () => {
   const handleSendMessage = async (
     e: React.FormEvent | React.KeyboardEvent,
     transcriptOverride?: string
-  ) => {  
+  ) => {
     e.preventDefault();
     if (!sessionId || (!inputMessage.trim() && !transcriptOverride)) {
       console.error("Missing session_id or empty input.");
@@ -311,6 +311,10 @@ const maybePlayNextSentence = () => {
   
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
+  
+      // Array to hold the sentences we've received
+      const sentences: string[] = [];
+      // Used to avoid duplicate TTS sentences
       let lastQueuedSentence = '';
   
       while (true) {
@@ -319,32 +323,36 @@ const maybePlayNextSentence = () => {
   
         const chunk = decoder.decode(value, { stream: true });
   
-        // Process TTS markers in the chunk
+        // Find TTS markers and process each sentence
         const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
         let match;
         while ((match = ttsPattern.exec(chunk)) !== null) {
           const sentence = match[1].trim();
           if (sentence && sentence !== lastQueuedSentence) {
             lastQueuedSentence = sentence;
+            // Preload the audio for TTS playback
             preloadSentenceAudio(sentence);
+            // Add the sentence to our sentences array
+            sentences.push(sentence);
+            // Update the chatbot text using the sentences array
+            setConversation(prev => {
+              const updated = [...prev];
+              updated[updated.length - 1] = { role: 'ai', message: sentences.join(' ') };
+              return updated;
+            });
           }
         }
-  
-        // Remove TTS markers and their content from the chunk
-        const cleanedChunk = chunk.replace(/\[TTS_START\].+?\[TTS_END\]/g, '');
-  
-        // Instead of appending, use the cleanedChunk directly
-        setConversation(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: 'ai', message: cleanedChunk };
-          return updated;
-        });
+        // Optionally, process any non-TTS text here if needed.
       }
     } catch (error) {
       console.error('❌ Streaming error:', error);
-      setConversation(prev => [...prev, { role: 'ai', message: 'Error connecting to server.' }]);
+      setConversation(prev => [
+        ...prev,
+        { role: 'ai', message: 'Error connecting to server.' }
+      ]);
     }
   };
+  
   
 
 const toggleRecording = async () => {
