@@ -312,10 +312,8 @@ const maybePlayNextSentence = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
   
-      // Array to hold the sentences we've received
+      // Array to hold the sentences we want to display
       const sentences: string[] = [];
-      // Used to avoid duplicate TTS sentences
-      let lastQueuedSentence = '';
   
       while (true) {
         const { done, value } = await reader.read();
@@ -323,26 +321,40 @@ const maybePlayNextSentence = () => {
   
         const chunk = decoder.decode(value, { stream: true });
   
-        // Find TTS markers and process each sentence
+        // Use regex to find all TTS markers in the current chunk
         const ttsPattern = /\[TTS_START\](.+?)\[TTS_END\]/g;
         let match;
         while ((match = ttsPattern.exec(chunk)) !== null) {
           const sentence = match[1].trim();
-          if (sentence && sentence !== lastQueuedSentence) {
-            lastQueuedSentence = sentence;
-            // Preload the audio for TTS playback
-            preloadSentenceAudio(sentence);
-            // Add the sentence to our sentences array
+          if (!sentence) continue;
+  
+          // Check if we already have a sentence
+          if (sentences.length > 0) {
+            const lastSentence = sentences[sentences.length - 1];
+            if (sentence.startsWith(lastSentence) && sentence.length > lastSentence.length) {
+              // The new sentence is an extension of the last one: update it.
+              sentences[sentences.length - 1] = sentence;
+            } else if (sentence === lastSentence) {
+              // Exact duplicate: do nothing.
+            } else {
+              // It's a new sentence, so add it.
+              sentences.push(sentence);
+            }
+          } else {
+            // No sentence yet, push the first one.
             sentences.push(sentence);
-            // Update the chatbot text using the sentences array
-            setConversation(prev => {
-              const updated = [...prev];
-              updated[updated.length - 1] = { role: 'ai', message: sentences.join(' ') };
-              return updated;
-            });
           }
+  
+          // Preload TTS audio for this sentence
+          preloadSentenceAudio(sentence);
+  
+          // Update the chatbot text based on the sentences array.
+          setConversation(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = { role: 'ai', message: sentences.join(' ') };
+            return updated;
+          });
         }
-        // Optionally, process any non-TTS text here if needed.
       }
     } catch (error) {
       console.error('❌ Streaming error:', error);
